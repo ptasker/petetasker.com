@@ -1,0 +1,84 @@
+.intro {
+  // font-family: 'VT323', monospace;
+  width: 50vw;
+  text-shadow: 1px 1px 2px black;
+  font-family: "Share Tech", monospace;
+  .hey {
+    display: block;
+    font-size: 2.4rem;
+    margin-bottom: 30px;
+  }
+  .mah-name {
+    display: block;
+    margin: 0.4vw 0 2vw 0;
+    margin-top: clamp(0.4vw, 0.4vw, 0.8vw);
+    font-size: clamp(48px, 5vw, 4vw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    &:before,
+    &:after {
+      content: "";
+      position: relative;
+      width: 30px;
+      height: 8px;
+      border-bottom: 8px dotted white;
+      opacity: 0.4;
+      display: block;
+    }
+  }
+
+  b {
+    text-transform: uppercase;
+    font-family: "Share Tech", monospace;
+    font-size: clamp(1.7rem, 1.4vw, 5rem);
+    font-weight: normal;
+  }
+
+  .dot{
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-bottom: 8px dotted white;
+    opacity: 0.4;
+    display: inline-block;
+    top: -4px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    .mah-name {
+      margin: 0;
+      font-size: 3rem;
+    }
+
+    .hey {
+      margin-bottom: 0;
+    }
+    b {
+      font-size: 1.3rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .hey {
+      font-size: 1.1rem;
+      margin: 0;
+      line-height: initial;
+    }
+    .mah-name{
+        font-size: 2rem;
+        display: inline-block;
+        &:before,
+        &:after {
+            display:none;
+        }
+    }
+    b {
+      font-size: 1.1rem;
+      line-height: initial;
+      display: inline-block;
+    }
+  }
+}
