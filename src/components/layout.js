@@ -1,7 +1,6 @@
 import React from "react"
 import { Link, useStaticQuery, graphql } from "gatsby"
 
-// import { rhythm } from "../utils/typography"
 import "../styles/main.scss"
 import GB from "../../content/assets/ghostbusters.mp4"
 import twitter from "../../content/assets/twitter.svg"

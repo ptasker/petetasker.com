@@ -40,7 +40,7 @@ const BlogIndex = ({ data, location }: PageProps<Data>) => {
 
   return (
     <Layout location={location} title={siteTitle} isHome={true}>
-      <SEO title={data.site.siteMetadata.title} />
+      <SEO title="Home" />
       <div className="post-list">
         {posts.map(({ node }) => {
           let { featuredImage } = node.frontmatter
