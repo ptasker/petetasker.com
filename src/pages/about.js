@@ -7,7 +7,7 @@ import Img from "gatsby-image"
 import { domainToUnicode } from "url"
 import Image from "gatsby-image"
 
-const Contact = props => {
+const About = props => {
   const data = useStaticQuery(graphql`
     query AboutQuery {
       avatar: file(absolutePath: { regex: "/profile-pic.png/" }) {
@@ -35,7 +35,7 @@ const Contact = props => {
 
   return (
     <Layout location="contact" title={siteTitle}>
-      <SEO title={"Contact"} description="About Pete" />
+      <SEO title={"About"} description="About Pete" />
       <h2>About</h2>
       <div className="about-row">
         <div className="avatar">
@@ -66,4 +66,4 @@ const Contact = props => {
   )
 }
 
-export default Contact
+export default About
