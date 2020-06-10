@@ -5,7 +5,7 @@ module.exports = {
       name: `Peter Tasker`,
       summary: `Open source developer in Ottawa Ontario, Canada`,
     },
-    description: `Website of Pete Tasker`,
+    description: `Peter Tasker is a software developer located in Ottawa Ontario, Canada.`,
     siteUrl: `https://petetasker.com`,
     social: {
       twitter: `petetasker`,

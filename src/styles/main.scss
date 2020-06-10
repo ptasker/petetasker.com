@@ -476,6 +476,11 @@ label{
 input, textarea{
     padding: 0.4rem;
 }
+.about-row{
+    display: grid;
+    grid-template-columns: 1fr 2.8fr;
+    grid-gap: 2rem;
+}
 
 @media (max-width: 1300px) {
   .video-overlay {
