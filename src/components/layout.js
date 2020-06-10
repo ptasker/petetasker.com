@@ -5,6 +5,7 @@ import "../styles/main.scss"
 import GB from "../../content/assets/ghostbusters.mp4"
 import twitter from "../../content/assets/twitter.svg"
 import rss from "../../content/assets/rss.svg"
+import linkedIn from "../../content/assets/linkedin.svg"
 
 import VideoOverlay from "./video-overlay"
 
@@ -54,6 +55,14 @@ const Layout = ({ location, title, children, isHome }) => {
               </h1>
             </div>
             <div className="site-mast-right">
+              <a
+                className="site-nav-item"
+                href={`https://www.linkedin.com/in/petertasker`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img className="site-nav-icon" src={linkedIn} alt="LinkedIn" />
+              </a>
               {site.social.twitter && (
                 <a
                   href={twitterUrl}
