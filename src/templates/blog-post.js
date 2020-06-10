@@ -27,7 +27,6 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
     title: post.frontmatter.title,
   }
 
-  console.log(post.excerpt)
   return (
     <Layout location={location} title={siteTitle}>
       <SEO title={post.frontmatter.title} description={post.excerpt} />
