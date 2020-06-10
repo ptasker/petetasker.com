@@ -53,7 +53,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
         {frontmatter.type === "post" && (
           <nav className="post-nav">
             <ul>
-              {previous.frontmatter.type !== "page" && (
+              {previous && previous.frontmatter.type !== "page" && (
                 <li>
                   {previous && (
                     <Link to={previous.fields.slug} rel="prev">
@@ -62,7 +62,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
                   )}
                 </li>
               )}
-              {next.frontmatter.type !== "page" && (
+              {next && next.frontmatter.type !== "page" && (
                 <li>
                   {next && (
                     <Link to={next.fields.slug} rel="next">
