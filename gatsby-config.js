@@ -5,7 +5,7 @@ module.exports = {
       name: `Peter Tasker`,
       summary: `Open source developer in Ottawa Ontario, Canada`,
     },
-    description: `A starter blog demonstrating what Gatsby can do.`,
+    description: `Website of Pete Tasker`,
     siteUrl: `https://petetasker.com`,
     social: {
       twitter: `petetasker`,
