@@ -12,7 +12,7 @@
     display: block;
     margin: 0.4vw 0 2vw 0;
     margin-top: clamp(0.4vw, 0.4vw, 0.8vw);
-    font-size: clamp(48px, 5vw, 4vw);
+    font-size: clamp(80px, 5vw, 4vw);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -34,9 +34,11 @@
     font-family: "Share Tech", monospace;
     font-size: clamp(1.7rem, 1.4vw, 5rem);
     font-weight: normal;
+    line-height: 1.5rem;
+    display: inline-block;
   }
 
-  .dot{
+  .dot {
     position: relative;
     width: 8px;
     height: 8px;
@@ -46,8 +48,11 @@
     top: -4px;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     width: 100%;
+  }
+  @media (max-width: 768px) {
+
     .mah-name {
       margin: 0;
       font-size: 3rem;
@@ -55,6 +60,7 @@
 
     .hey {
       margin-bottom: 0;
+      display: none;
     }
     b {
       font-size: 1.3rem;
@@ -67,18 +73,24 @@
       margin: 0;
       line-height: initial;
     }
-    .mah-name{
-        font-size: 2rem;
-        display: inline-block;
-        &:before,
-        &:after {
-            display:none;
-        }
+    .mah-name {
+      font-size: 2rem;
+      display: inline-block;
+      &:before,
+      &:after {
+        display: none;
+      }
     }
     b {
       font-size: 1.1rem;
       line-height: initial;
       display: inline-block;
+    }
+  }
+
+  @media (min-width: 2500px) {
+    .hey {
+      margin-bottom: 40px;
     }
   }
 }

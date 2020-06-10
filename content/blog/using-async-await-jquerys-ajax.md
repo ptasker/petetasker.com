@@ -1,5 +1,5 @@
 ---
-title: 'Using async await with jQuery&#8217;s $.ajax'
+title: "Using async await with jQuery's $.ajax"
 date: '2017-12-14T13:26:01-04:00'
 status: publish
 permalink: /using-async-await-jquerys-ajax
@@ -17,6 +17,8 @@ tag: []
 ---
 <small>Photo by [Denys Nevozhai](https://unsplash.com/photos/2vmT5_FeMck?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)</small>
 
+> If you’re like me, you’re probably stuck using jQuery more often than not. It’s everywhere, and to be honest it’s a solid, mature library. It’s also often already loaded on the page, especially if you’re working with WordPress.
+ 
 If you’re like me, you’re probably stuck using jQuery more often than not. It’s everywhere, and to be honest it’s a solid, mature library. It’s also often already loaded on the page, especially if you’re working with WordPress.
 
 Outside of DOM manipulations (which you can now do *mostly* with native JS), jQuery’s `$.ajax()` method is really handy and works well.

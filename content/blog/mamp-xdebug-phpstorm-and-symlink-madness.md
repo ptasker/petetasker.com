@@ -6,34 +6,7 @@ permalink: /mamp-xdebug-phpstorm-and-symlink-madness
 author: Pete
 excerpt: ''
 type: post
-id: 294
-category:
-    - Code
-    - PHP
-    - WordPress
-tag:
-    - MAMP
-    - PHPStorm
-    - xdebug
-post_format: []
-code_field:
-    - 'Another code field heres'
-flex:
-    - 'a:4:{i:0;s:4:"test";i:1;s:4:"test";i:2;s:4:"test";i:3;s:4:"test";}'
-flex_0_test:
-    - 'Testing code'
-flex_1_test:
-    - ''
-flex_2_test:
-    - ''
-flex_3_test:
-    - ''
-wussup:
-    - 'wussup value here;'
-text_box_1:
-    - 'Text box'
-another_box:
-    - 'MOAR TEXT'
+
 ---
 Ask any PHP developer and they’ll tell you [Xdebug](https://xdebug.org/) is the best thing since sliced bread. While true, it’s also one of the biggest pain in the asses to setup. I’ve probably set it up, in various incarnations, close to 10 times.
 

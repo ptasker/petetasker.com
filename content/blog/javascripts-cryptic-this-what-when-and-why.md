@@ -1,5 +1,5 @@
 ---
-title: 'JavaScript&#8217;s cryptic &#8216;this&#8217; &#8211; what, when and why'
+title: "JavaScript's cryptic 'this' - what, when and why"
 date: '2017-11-30T16:30:18-04:00'
 status: publish
 type: post

@@ -69,6 +69,9 @@ svg:not(:root) {
 mark {
   background-color: #fdffb6;
 }
+li{
+    margin: 0.8rem 0;
+}
 code,
 kbd,
 pre,
@@ -156,6 +159,16 @@ ol,
 dl,
 blockquote {
   margin: 0 0 1.5em 0;
+}
+
+blockquote{
+    margin: .3em 0 1.8em;
+    padding: 0.9rem 1.6em;
+    border-left: .5em solid #292eaf52;
+    background: #8080801c;
+    p:last-child{
+        margin-bottom:0;
+    }
 }
 
 ol,
@@ -383,15 +396,13 @@ h6 {
         // transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
       }
 
-      &:hover{
-        &:before{
-            opacity: 1;
-            width: 75%;
-            // transition: opacity, width 0.5s;
+      &:hover {
+        &:before {
+          opacity: 1;
+          width: 75%;
+          // transition: opacity, width 0.5s;
         }
-    
       }
-
 
       &:first-child {
         padding-left: 0;
@@ -453,14 +464,60 @@ hr.blog {
   margin-top: 2rem;
 }
 
+label{
+    display: grid;
+    grid-template-columns: 2fr 6fr;
+    padding: 0.6rem 0;
+    span{
+        font-weight: 500;
+    }
+}
+
+input, textarea{
+    padding: 0.4rem;
+}
+
+@media (max-width: 1300px) {
+  .video-overlay {
+    width: 100%;
+  }
+}
+@media (max-width: 1024px) {
+    .site-nav,
+    footer,
+    main.container {
+      padding: 0 20px;
+    }
+}
+
 @media (max-width: 768px) {
   .post-list {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .video-overlay {
-    width: 100%;
+
+label{
+    display: grid;
+    grid-template-columns: 2fr;
+    padding: 0.6rem 0;
+    span{
+        display: inline-block;
+        padding-bottom: 10px;
+    }
+}
+
+
+  .site-mast {
+    padding: 1rem 20px;
   }
+  .bio {
+    display: grid;
+    grid-template-columns: 2fr 22fr;
+  }
+
+  .site-mast .site-mast-right a {
+    padding-left: 0.5rem;
+}
 }
 
 @media (max-width: 576px) {
@@ -487,4 +544,6 @@ hr.blog {
       line-height: 1.7rem;
     }
   }
+
+  //forms
 }

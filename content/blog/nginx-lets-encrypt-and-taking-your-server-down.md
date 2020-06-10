@@ -1,5 +1,5 @@
 ---
-title: 'Nginx, Let&#8217;s Encrypt and taking my own server down ?'
+title: "Nginx, Let's Encrypt and taking my own server down?"
 date: '2018-04-09T20:49:15-04:00'
 status: publish
 permalink: /nginx-lets-encrypt-and-taking-your-server-down

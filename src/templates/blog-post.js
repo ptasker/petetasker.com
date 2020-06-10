@@ -26,12 +26,11 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
     identifier: post.id,
     title: post.frontmatter.title,
   }
+
+  console.log(post.excerpt)
   return (
     <Layout location={location} title={siteTitle}>
-      <SEO
-        title={post.frontmatter.title}
-        description={post.frontmatter.description || post.excerpt}
-      />
+      <SEO title={post.frontmatter.title} description={post.excerpt} />
       {frontmatter.type === "post" && <Bio />}
       <article>
         {featuredImgFluid && (
@@ -51,7 +50,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
           {frontmatter.type === "post" && <p>{frontmatter.date}</p>}
         </header>
         <section dangerouslySetInnerHTML={{ __html: post.html }} />
-        <Disqus config={disqusConfig} />
+        {frontmatter.type === "post" && <Disqus config={disqusConfig} />}
         {frontmatter.type === "post" && (
           <nav className="post-nav">
             <ul>
