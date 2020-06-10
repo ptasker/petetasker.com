@@ -19,6 +19,7 @@ const Layout = ({ location, title, children, isHome }) => {
       query {
         site {
           siteMetadata {
+            siteUrl
             title
             social {
               twitter
