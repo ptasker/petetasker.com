@@ -87,7 +87,7 @@ export const pageQuery = graphql`
   query {
     defaultImg: file(absolutePath: { regex: "/gb-thumb.jpg/" }) {
       childImageSharp {
-        fluid(maxWidth: 400, quality: 80, webpQuality: 90) {
+        fluid(maxWidth: 200, quality: 80, webpQuality: 90) {
           ...GatsbyImageSharpFluid
         }
       }
@@ -112,7 +112,7 @@ export const pageQuery = graphql`
             title
             featuredImage {
               childImageSharp {
-                fluid(maxWidth: 400) {
+                fluid(maxWidth: 200) {
                   ...GatsbyImageSharpFluid
                 }
               }
