@@ -13,11 +13,7 @@ category:
     - PHP
     - xdebug
 tag: []
-post_format: []
-medium_post:
-    - 'O:11:"Medium_Post":11:{s:16:"author_image_url";N;s:10:"author_url";N;s:11:"byline_name";N;s:12:"byline_email";N;s:10:"cross_link";s:2:"no";s:2:"id";N;s:21:"follower_notification";s:3:"yes";s:7:"license";s:19:"all-rights-reserved";s:14:"publication_id";s:2:"-1";s:6:"status";s:4:"none";s:3:"url";N;}'
-groups:
-    - ''
+
 ---
 Lately, [VS Code](https://code.visualstudio.com/) has been getting a lot of hype in the dev community. It’s been around since for a few years and TBH is a really sweet editor. Lots of great extensions and community support. It’s also quite fast (for an Electron app ?) and the peeps and Microsoft seem to be keeping it up to date and iterating quickly.
 

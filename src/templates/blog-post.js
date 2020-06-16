@@ -46,7 +46,18 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
           >
             {ReactHtmlParser(post.frontmatter.title)}
           </h2>
-          {frontmatter.type === "post" && <p>{frontmatter.date}</p>}
+
+          {frontmatter.type === "post" && (
+            <p className="date-row">
+              {frontmatter.date}
+              {" • "}
+              {frontmatter.imagequote && (
+                <a href={frontmatter.imagelink ? frontmatter.imagelink : ""}>
+                  {frontmatter.imagequote}
+                </a>
+              )}
+            </p>
+          )}
         </header>
         <section dangerouslySetInnerHTML={{ __html: post.html }} />
         {frontmatter.type === "post" && <Disqus config={disqusConfig} />}
@@ -97,6 +108,8 @@ export const pageQuery = graphql`
         title
         date(formatString: "MMMM DD, YYYY")
         type
+        imagequote
+        imagelink
         featuredImage {
           childImageSharp {
             fluid(maxWidth: 800) {

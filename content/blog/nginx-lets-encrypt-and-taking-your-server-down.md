@@ -6,6 +6,8 @@ permalink: /nginx-lets-encrypt-and-taking-your-server-down
 author: Pete
 excerpt: ''
 type: post
+imagequote: 'Image: Simon Fitall'
+imagelink: 'https://unsplash.com/@simonfitall?utm_medium=referral&utm_campaign=photographer-credit&utm_content=creditBadge'
 featuredImage: ../blog-post-images/nginx2.jpg
 category:
     - General
@@ -13,7 +15,6 @@ category:
     - Linux
 tag: []
 ---
-[<span style="display: inline-block; padding: 2px 3px;">Image: Simon Fitall</span>](https://unsplash.com/@simonfitall?utm_medium=referral&utm_campaign=photographer-credit&utm_content=creditBadge "Download free do whatever you want high-resolution photos from Simon Fitall")
 
 If you pay attention to [Google and it’s indexing rules](https://fourdots.com/blog/why-you-need-ssl-to-rank-better-in-2016-and-how-to-set-it-2169), you’ve probably heard that you need an SSL certificate on your site. I’ve known this for a while and my personal site at petetasker.com wasn’t a high priority situation.
 
@@ -39,16 +40,15 @@ I managed to solve this issue by removing the following block in the `/etc/nginx
     if ($host = petetasker.com) {
        return 301 https://$host$request_uri;
     } # managed by Certbot
-
 ```
 
 And adding a simpler redirect block, just to be *reallllly* clear, at the top of the file:
 
 ```shell
 server{
-        listen 80;
-        server_name petetasker.com;
-        return 301 https://$server_name$request_uri;
+    listen 80;
+    server_name petetasker.com;
+    return 301 https://$server_name$request_uri;
 }
 
 ```
@@ -63,6 +63,7 @@ server{
         server_name petetasker.com;
         return 301 https://$server_name$request_uri;
 }
+
 server {
 
         listen 80 default_server;
@@ -91,7 +92,5 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/petetasker.com-0001/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
-
 ```
