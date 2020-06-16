@@ -4,11 +4,12 @@ date: '2017-11-30T16:30:18-04:00'
 status: publish
 type: post
 featuredImage: ../blog-post-images/this.jpg
+imagequote: 'Photo by Tarun Ram on Unsplash'
+imagelink: 'https://unsplash.com/'
 category:
     - Code
     - Javascript
 ---
-<small>\*Photo by Tarun Ram on Unsplash</small>
 
 Before MDN started to organize their JavaScript documentation, finding answers to your JavaScript questions often landed you on Stack Overflow.
 
@@ -25,13 +26,13 @@ Ok, so yeah, if you run `console.log(this)` in your dev console you’ll *genera
 It gets more interesting when you check the value of `this` inside a function:
 
 ```javascript
+
 function mahFunc(){
     console.log(this);
 }
 
 mahFunc();
 // Window{}
-
 ```
 
 You should still see the Window object. Ok so, nothing new here.
@@ -72,12 +73,11 @@ Call me plz
 Ok so `this` in a global context is weird, but who doesn’t use objects and ES2015 classes these days? If you’d like to use a *different* value for `this`, (as-in not `undefined` or `Window`) inside your function, you can pass a context with [`.call()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) and [`.apply()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply). I always remember these with ‘yadda-yadda.prototype.call()’.
 
 ```javascript
-function mahFunc(){
-    console.log(this);
+function mahFunc() {
+  console.log(this);
 }
 
 const config = {
-
     stepOne(){
         //do step one
     },

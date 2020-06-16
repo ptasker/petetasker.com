@@ -75,9 +75,10 @@ This [Stack Overflow answer](https://stackoverflow.com/a/26804844/130596) summar
 >
 >You are in a restaurant with many other people. You order your food. Other people can also order their food, they don't have to wait for your food to be cooked and served to you before they can order. In the kitchen restaurant workers are continuously cooking, serving, and taking orders. People will get their food served as soon as it is cooked.
 
-But now…
+If we take the earlier example and update it to use `async/await` syntax: 
 
 ```javascript{numberLines: true}
+
 async function doAjax(args) {
     const result = await $.ajax({
         url: ajaxurl,
@@ -90,7 +91,7 @@ async function doAjax(args) {
 
 ```
 
-And result *actually* returns the AJAX result. Cool right?
+And the `result` variable *actually* returns the AJAX result. Cool right?
 
 The big benefit of async/await is that it makes asynchronous code *appear* synchronous. As in, do this thing, wait for it to finish and then give me the result.
 
@@ -100,6 +101,7 @@ Errors
 Notice anything missing in our new function? Yep, error handling is non-existent. Fortunately, since async/await is essentially synchronous, you can use `try...catch()`!!!
 
 ```javascript{numberLines: true}
+
 async function doAjax(args) {
     let result;
 
@@ -127,7 +129,6 @@ The first option is to make sure that you use await when calling `doAjax()` late
 ```javascript
 // Elsewhere in code, inside an async function
 const stuff = await doAjax();
-
 ```
 
 The other option is to use the `Promise` interface and roll that way:
