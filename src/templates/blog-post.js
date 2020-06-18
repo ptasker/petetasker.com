@@ -50,12 +50,17 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
           {frontmatter.type === "post" && (
             <p className="date-row">
               {frontmatter.date}
-              {" • "}
+
               {frontmatter.imagequote && (
-                <a href={frontmatter.imagelink ? frontmatter.imagelink : ""}>
-                  {frontmatter.imagequote}
-                </a>
+                <>
+                  {" • "}
+                  <a href={frontmatter.imagelink ? frontmatter.imagelink : ""}>
+                    {frontmatter.imagequote}
+                  </a>
+                </>
               )}
+              {" • "}
+              {post.fields.readingTime.text}
             </p>
           )}
         </header>
@@ -103,6 +108,11 @@ export const pageQuery = graphql`
     markdownRemark(fields: { slug: { eq: $slug } }) {
       id
       excerpt(pruneLength: 160)
+      fields {
+        readingTime {
+          text
+        }
+      }
       html
       frontmatter {
         title
