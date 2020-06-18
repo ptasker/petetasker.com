@@ -1,15 +1,15 @@
 ---
-title: "An introduction to Gatsby if all you know is WordPress"
+title: "An introduction to Gatsby for WordPress Developers"
 date: '2020-06-18'
 status: publish
 permalink: /wordpress-to-gatsby
 author: Pete
 excerpt: ''
 type: post
-imagequote: ''
-imagelink: ''
+imagequote: 'Photo by JC Gellidon on Unsplash'
+imagelink: 'https://unsplash.com/photos/Khqmo4T-rs0'
 
-featuredImage: .
+featuredImage: ./wordpress-gatsby.jpg
 category:
     - Code
     - Javascript
@@ -17,9 +17,9 @@ category:
 tag: []
 ---
 
-Like a lot of people, my personal website at petetasker.com was a WordPress site. I've worked with WordPress a bunch in my career and felt like it was a good balance of functionality and flexibility. But lately, I've thought about ditching it all and switching over to a static site. I personally love writing in Markdown, and the new WordPress editor relegated Markdown writing to a second class citizen. So I figured now was the time to switch over to something else entirely different, something like [Gatsby](https://www.gatsbyjs.org/).
+For a long time, my personal website was a built on WordPress. I've worked with WordPress a bunch in my career and felt like it was a good balance of functionality and flexibility. But lately, I've thought about ditching it all and switching over to a static site. I personally love writing in Markdown, and the new WordPress editor relegated Markdown writing to a second class citizen. So I figured now was the time to switch over to something else entirely different, something like [Gatsby](https://www.gatsbyjs.org/).
 
-Gatsby is a static site generator, if you're not familiar, that allows your write your templates in React and uses NodeJS under the hood to compile your site. I enjoyed building the new site: creating templates, configuring the GraphQL queries and getting back into traditional web development.
+Gatsby is a static site generator, if you're not familiar, that allows you write your templates in React and uses NodeJS under the hood to compile your site. I enjoyed building my new site: creating templates, configuring the GraphQL queries and getting back into traditional web development.
  
  At work, I've written about using WordPress as data source on [the SpinupWP blog](https://spinupwp.com/gatsby-headless-wordpress/), and I wanted to know what it would be like to switch from WordPress to a Markdown based blog.
 
@@ -27,11 +27,11 @@ Gatsby is a static site generator, if you're not familiar, that allows your writ
 
 ## Extracting Content From WordPress
 
-The first step to getting content out of WordPress was grabbing an XML export. This is can be done by using the WordPress core exporter. You can run create the export by logging into your wp-admin and going to Tools > Export.
+The first step to getting content out of WordPress was grabbing an XML export. This can be done using the WordPress core exporter. You can run create the export by logging into your wp-admin and going to Tools > Export.
 
-Once you have an export XML file you'll need a markdown converter. There are few available online, I used the [wordpress-export-to-markdown](https://github.com/lonekorean/wordpress-export-to-markdown) script, but there's plugins and scripts like [ExitWP](https://github.com/thomasf/exitwp) availble online that do the same thing.
+Once you have an export XML file you'll need a markdown converter. There are few available online, I used the [wordpress-export-to-markdown](https://github.com/lonekorean/wordpress-export-to-markdown) script, but there's plugins and scripts like [ExitWP](https://github.com/thomasf/exitwp) available online that do the same thing.
 
-It's pretty straighforward to convert the XML export into Markdown. With the `wordpress-export-to-markdown` script it's really just this one command:
+It's pretty straightforward to convert the XML export into Markdown. With the `wordpress-export-to-markdown` script it's really just this one command:
 
 ```shell
 npx wordpress-export-to-markdown --save-attached-images true
@@ -47,7 +47,7 @@ The data in the Markdown files was a little mangled, but not too bad. The 'front
 
 For the most part, the posts came across ok. There was a bit of formatting and styling needed in terms of `<code>` and `<pre>` tags, as well as fixing up image paths. Other than than, most formatting was in pretty good shape!
 
-`#winning`
+<div style="width:100%;height:0;padding-bottom:60%;position:relative;"><iframe src="https://giphy.com/embed/3ohryhNgUwwZyxgktq" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/okcupid-3ohryhNgUwwZyxgktq">via GIPHY</a></p>
 
 ## Getting Gatsby up and running
 
@@ -96,15 +96,17 @@ The Gatsby starter will have this file mostly populated out of the gate, but it'
 
 ## Gatsby Node APIs
 
-The next thing to learn about are the [Gatsby Node APIs](https://www.gatsbyjs.org/docs/node-apis/). These are managed the `gatsby-node.js` file. In here, we define how pages get created and how they interface with the [GraphQL](https://www.gatsbyjs.org/docs/graphql-concepts/) layer.
+The next thing to learn about are the [Gatsby Node APIs](https://www.gatsbyjs.org/docs/node-apis/). These are managed by the `gatsby-node.js` file. Here, we define how pages get created and how they interface with the [GraphQL](https://www.gatsbyjs.org/docs/graphql-concepts/) layer.
 
-The main function to create pages is the called, unironicly, [`createPages()`](https://www.gatsbyjs.org/docs/node-apis/#createPages). In here we define the query to get our posts, and any additional data we want to add to our posts/pages. We then call the [`createPage()`](https://www.gatsbyjs.org/docs/actions/#createPage) function for each 'post' we want created.
+The main function to create pages is the called, unironically, [`createPages()`](https://www.gatsbyjs.org/docs/node-apis/#createPages). In here we define the query to get our posts, and any additional data we want to add to our posts/pages. We then call the [`createPage()`](https://www.gatsbyjs.org/docs/actions/#createPage) function for each 'post' we want created.
 
-It's important to note that `gatsby-node.js` file is essentially just a node script with access to the Gatsby APIs. This is helpful information if you're debugging during the build process, you can [debug the Gatsby build ste](https://www.gatsbyjs.org/docs/debugging-the-build-process/) just as you would any other Node script.
+It's important to note that `gatsby-node.js` file is essentially just a node script with access to the Gatsby APIs. This is helpful information if you're debugging during the build process, you can [debug the Gatsby build site](https://www.gatsbyjs.org/docs/debugging-the-build-process/) just as you would any other Node script.
 
 In this file, we import a template to use when the `createPage()` function is called a bit later.
 
-    const blogPost = path.resolve(`./src/templates/blog-post.js`)
+```javascript
+const blogPost = path.resolve(`./src/templates/blog-post.js`)
+```
 
 Then, we have our GraphQL query which is saved in the `postsResult` variable. We use the `graphql` function which is part of the Gatsby package;
 
@@ -139,7 +141,7 @@ Gatsby also has a [great overview](https://www.gatsbyjs.org/docs/graphql-concept
 
 All we need to know about the above query is that it gets all of our content from our markdown files, sorted by date and limited to 1000.
 
-The neat thing about GraphQL is that is returns data in the _same format_ as we request it. So we can access data in the `postsResult` variable like we would any other JS object.
+The neat thing about GraphQL is that it returns data in the _same format_ as we request it. So we can access data in the `postsResult` variable like we would any other JS object.
 
 So in our query we're asking for:
 
@@ -284,17 +286,16 @@ It seems a lot more complicated than what you would need to do in a WordPress th
 <img src="<?php echo esc_url( get_theme_mod( 'banner-section-image', '' ) ); ?>" alt="Alt text" >
 ```
 
-I'd argue that the biggest improvement over WordPress is Gatsby's image handling. Having the correct sizes created automatically and having them lazy-loaded is a game changer. It requires next to no effort and everything is super performant out of th box.
+I'd argue that the biggest improvement over WordPress is Gatsby's image handling. Having the correct sizes created automatically and having them lazy-loaded is a game changer. It requires next to no effort and everything is super performant out of the box.
 
-# winning
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/KTHNWHfhKQD4c" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/win-success-winning-KTHNWHfhKQD4c">via GIPHY</a></p>
 
 Ok, so let's review:
 
 1. ✅ We've exported our WordPress site content to Markdown
 2. ✅ We've exported our media
 3. ✅ We've created a new Gatsby site that loads our markdown files
-
-We also understand how image handling is a bit different in Gatsby.
+4. ✅ We're loading up our images in posts and our templates
 
 All that's left is deployment and hosting!
 
@@ -304,13 +305,11 @@ One of the sticking points with WordPress is finding a decent host. Most managed
 
 Does hosting Gatsby have the same issues? In a word, no.
 
-Because Gatsby compiles down to _essentially_ a static HTML web site, you can host almost anywhere. Theres' no dynamic content, so it's pretty quick right out of the box. Even more, [Netlify](https://www.netlify.com/) offers free hosting of Gatsby sites, including [Let's Encrypt SSL certificates](https://letsencrypt.org/) and custom domains. That's where I'm hosting this site and it's the bees knees.
+Because Gatsby compiles down to _essentially_ a static HTML web site, you can host almost anywhere. There's no dynamic content, so it's pretty quick right out of the box. Even more, [Netlify](https://www.netlify.com/) offers free hosting of Gatsby sites, including [Let's Encrypt SSL certificates](https://letsencrypt.org/) and custom domains. That's where I'm hosting this site and it's the bee's knees.
 
-I've also set up git deployments, so pushing to master deploys the site. 
+I've also set up git deployments, so pushing to master deploys the site.
 
-#WINNING 3
-
-## Where WordPress is better
+## Where WordPress is a better option
 
 Ok, so all this sounds pretty great doesn't it? Well it is, and Gatsby _is_ awesome, but it's not without issues.
 
@@ -320,11 +319,20 @@ You get the point.
 
 It's a static site, so it's a static site. There's no dynamic aspect to the site, everything is built at compile time. That's probably the biggest drawback of Gatsby, there's no 'dynamic' functionality on your site by default.
 
-Of course, there are workarounds and services that will get you this interactivity, but it involves weaving together third party services, like Disqus or Shopify.
+Of course, there are workarounds and services that will get you this interactivity, but it involves weaving together third party services, like Disqus for comments or Shopify for ecommerce.
 
 I've got Disqus comments enabled (leave a comment!) and use Netlify's form handling for my contact form. But if you've got a highly dynamic site with dynamic content, Gatsby is probably a no-go.
 
 WordPress on the other hand is dynamic by default, so you can get pretty far with plugins and custom code.
 
+## In the end
 
+For my own purposes, as a developer, Gatsby is a great solution. I can write in Markdown, deploy my site with `git push origin main` and write React code for my templates. 
 
+One more time.
+
+<div style="width:100%;height:0;padding-bottom:74%;position:relative;"><iframe src="https://giphy.com/embed/msKNSs8rmJ5m" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/day-subreddit-msKNSs8rmJ5m">via GIPHY</a></p>
+
+What do you think about Gatsby over WordPress?
+
+_You can check out the source for this site [on Github](https://github.com/ptasker/petetasker.com)_
