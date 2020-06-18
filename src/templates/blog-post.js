@@ -1,7 +1,7 @@
 import React from "react"
-import { Link, graphql, useStaticQuery } from "gatsby"
+import { Link, graphql } from "gatsby"
 import ReactHtmlParser from "react-html-parser"
-import { Disqus, CommentCount } from "gatsby-plugin-disqus"
+import { Disqus } from "gatsby-plugin-disqus"
 
 import Bio from "../components/bio"
 import Layout from "../components/layout"
@@ -20,7 +20,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
   if (featuredImage && featuredImage.hasOwnProperty("childImageSharp")) {
     featuredImgFluid = featuredImage.childImageSharp.fluid
   }
-  // let featuredImgFluid = post.frontmatter.featuredImage.childImageSharp.fluid
+
   let disqusConfig = {
     url: `${data.site.siteMetadata.siteUrl + location.pathname}`,
     identifier: post.id,

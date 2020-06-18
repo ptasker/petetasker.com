@@ -40,17 +40,11 @@ exports.createPages = async ({ graphql, actions }) => {
     let previous, next
 
     const { node } = post
-    if (
-      // node.frontmatter.hasOwnProperty("type") &&
-      node.frontmatter.type === "post"
-    ) {
+    if (node.frontmatter.type === "post") {
       previous = index === posts.length - 1 ? null : posts[index + 1].node
     }
 
-    if (
-      // node.frontmatter.hasOwnProperty("type") &&
-      node.frontmatter.type === "post"
-    ) {
+    if (node.frontmatter.type === "post") {
       next = index === 0 ? null : posts[index - 1].node
     }
 

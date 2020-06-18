@@ -37,7 +37,13 @@ module.exports = {
       options: {
         plugins: [
           `gatsby-remark-autolink-headers`,
-
+          {
+            resolve: "gatsby-remark-external-links",
+            options: {
+              target: "_blank",
+              rel: "nofollow",
+            },
+          },
           `gatsby-remark-prismjs`,
           {
             resolve: `gatsby-remark-images`,

@@ -8,6 +8,7 @@ import rss from "../../content/assets/rss.svg"
 import linkedIn from "../../content/assets/linkedin.svg"
 
 import VideoOverlay from "./video-overlay"
+import HomeBio from "./homepage-bio"
 
 //https://www.gatsbyjs.org/tutorial/part-four/
 
@@ -84,6 +85,7 @@ const Layout = ({ location, title, children, isHome }) => {
               </a>
             </div>
           </div>
+          {/* {isHome ? <HomeBio /> : null} */}
           {isHome ? (
             <div className="site-banner">
               <div className="video-wrap">

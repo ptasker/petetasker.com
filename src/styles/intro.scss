@@ -1,3 +1,22 @@
+.home-bio{
+    // width: 50vw;
+    color: #fff;
+    margin: 0 auto;
+    padding: 1rem 0;
+    .bio-wrap{
+        display: grid;
+        grid-template-columns: 0.5fr 1fr;
+        grid-gap: 1rem;
+        .source-code{
+            color:#41ad41;
+        }
+
+        .ecto-one{
+            
+        }
+    }
+}
+
 .intro {
   // font-family: 'VT323', monospace;
   width: 50vw;

@@ -1,6 +1,7 @@
 @import "./reset.scss";
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=B612+Mono:ital,wght@0,700;1,700&family=Cutive+Mono&family=Share+Tech+Mono&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;1,200;1,300;1,400;1,500;1,600&display=swap');
 
 $defaultColor: "#000";
 
@@ -228,7 +229,7 @@ h2 {
 .gatsby-highlight {
     background-color: #2d2d2d;
     border-radius: 0.3em;
-    margin: 0.5em 0;
+    margin: 0.5em 0 1.5em 0;
     padding: 0.6em;
     overflow: auto;
 }
@@ -440,6 +441,12 @@ h6 {
   }
 }
 
+
+.gatsby-highlight-code-line{
+    background: yellow;
+    padding: 3px 0;
+}
+
 .muted {
   opacity: 0.6;
   font-size: 0.8rem;
@@ -457,6 +464,14 @@ article {
   .date-row{
       font-size: 0.86rem;
       color: #5c5c5c;
+  }
+
+  a{
+      text-decoration: underline;
+      background: none;
+      &:hover{
+          text-decoration: none;
+      }
   }
 }
 
@@ -568,6 +583,12 @@ pre[class*="language-"] {
     padding-left: 0.5rem;
   }
 }
+
+
+.source-code{
+    font-family: 'Source Code Pro', monospace;
+}
+//_________ MEDIA QUERIES
 
 @media (max-width: 576px) {
   .site-mast h1 {

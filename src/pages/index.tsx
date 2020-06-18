@@ -41,7 +41,9 @@ const BlogIndex = ({ data, location }: PageProps<Data>) => {
   return (
     <Layout location={location} title={siteTitle} isHome={true}>
       <SEO title="Home" />
+      <h2>From the Blog</h2>
       <div className="post-list">
+          
         {posts.map(({ node }) => {
           let { featuredImage } = node.frontmatter
           let featuredImgFluid = data.defaultImg.childImageSharp.fluid;

@@ -3,8 +3,6 @@ import { graphql, useStaticQuery } from "gatsby"
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
-import Img from "gatsby-image"
-import { domainToUnicode } from "url"
 import Image from "gatsby-image"
 
 const About = props => {
