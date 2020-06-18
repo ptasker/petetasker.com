@@ -43,10 +43,12 @@ const BlogIndex = ({ data, location }: PageProps<Data>) => {
       <SEO title="Home" />
       <h2>From the Blog</h2>
       <div className="post-list">
-          
         {posts.map(({ node }) => {
+          const link = node.frontmatter.permalink
+            ? node.frontmatter.permalink
+            : node.fields.slug
           let { featuredImage } = node.frontmatter
-          let featuredImgFluid = data.defaultImg.childImageSharp.fluid;
+          let featuredImgFluid = data.defaultImg.childImageSharp.fluid
 
           if (
             featuredImage &&
@@ -60,11 +62,13 @@ const BlogIndex = ({ data, location }: PageProps<Data>) => {
           return (
             <article key={node.fields.slug}>
               {featuredImgFluid && (
-                 <Link to={node.fields.slug}><Img fluid={featuredImgFluid} className="featured-image" /></Link>
+                <Link to={link}>
+                  <Img fluid={featuredImgFluid} className="featured-image" />
+                </Link>
               )}
               <header>
                 <h3>
-                  <Link to={node.fields.slug}>{ReactHtmlParser(title)}</Link>
+                  <Link to={link}>{ReactHtmlParser(title)}</Link>
                 </h3>
                 <small>{node.frontmatter.date}</small>
               </header>
@@ -112,6 +116,7 @@ export const pageQuery = graphql`
           frontmatter {
             date(formatString: "MMMM DD, YYYY")
             title
+            permalink
             featuredImage {
               childImageSharp {
                 fluid(maxWidth: 200) {

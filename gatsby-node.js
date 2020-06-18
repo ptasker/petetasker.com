@@ -21,6 +21,7 @@ exports.createPages = async ({ graphql, actions }) => {
               frontmatter {
                 title
                 type
+                permalink
               }
             }
           }
@@ -49,7 +50,9 @@ exports.createPages = async ({ graphql, actions }) => {
     }
 
     createPage({
-      path: post.node.fields.slug,
+      path: post.node.frontmatter.permalink
+        ? post.node.frontmatter.permalink
+        : post.node.fields.slug,
       component: blogPost,
       context: {
         slug: post.node.fields.slug,
