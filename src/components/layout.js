@@ -10,10 +10,7 @@ import linkedIn from "../../content/assets/linkedin.svg"
 import VideoOverlay from "./video-overlay"
 import HomeBio from "./homepage-bio"
 
-//https://www.gatsbyjs.org/tutorial/part-four/
-
 const Layout = ({ location, title, children, isHome }) => {
-  // const rootPath = `${__PATH_PREFIX__}/`
   let header
 
   const data = useStaticQuery(
