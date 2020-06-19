@@ -28,7 +28,13 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
   )
 
   const metaDescription = description || site.siteMetadata.description
-  const imageSrc = thumbnail && thumbnail.childImageSharp.sizes.src
+  let thumbnailFluid = undefined
+
+  if (thumbnail && thumbnail.hasOwnProperty("childImageSharp")) {
+    thumbnailFluid = thumbnail.childImageSharp.fluid
+  }
+
+  const imageSrc = thumbnailFluid && thumbnail.childImageSharp.fluid.src
 
   let origin = ""
   if (typeof window !== "undefined") {
