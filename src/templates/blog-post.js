@@ -29,7 +29,11 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
 
   return (
     <Layout location={location} title={siteTitle}>
-      <SEO title={post.frontmatter.title} description={post.excerpt} />
+      <SEO
+        title={post.frontmatter.title}
+        description={post.excerpt}
+        thumbnail={featuredImage}
+      />
       {frontmatter.type === "post" && <Bio />}
       <article>
         {featuredImgFluid && (
