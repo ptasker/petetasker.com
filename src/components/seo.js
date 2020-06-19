@@ -67,12 +67,16 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
           content: `website`,
         },
         {
+          name: `og:image`,
+          content: image,
+        },
+        {
           name: `twitter:image`,
           content: image,
         },
         {
           name: `twitter:card`,
-          content: `summary`,
+          content: `summary_large_image`,
         },
         {
           name: `twitter:creator`,
