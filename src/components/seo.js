@@ -75,6 +75,14 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
           content: image,
         },
         {
+          name: `twitter:image:width`,
+          content: 1200,
+        },
+        {
+          name: `twitter:image:height`,
+          content: 620,
+        },
+        {
           name: `twitter:card`,
           content: `summary_large_image`,
         },

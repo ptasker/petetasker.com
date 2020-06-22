@@ -1,12 +1,8 @@
 import React from "react"
-import { Link, graphql, useStaticQuery } from "gatsby"
-import { Formik, Form, Field, ErrorMessage } from "formik"
+import { graphql, useStaticQuery } from "gatsby"
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
-import Img from "gatsby-image"
-import { domainToUnicode } from "url"
-
 const Contact = props => {
   const data = useStaticQuery(graphql`
     query ContactQuery {

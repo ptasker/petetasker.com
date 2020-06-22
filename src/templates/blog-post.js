@@ -2,7 +2,6 @@ import React from "react"
 import { Link, graphql } from "gatsby"
 import ReactHtmlParser from "react-html-parser"
 import { Disqus } from "gatsby-plugin-disqus"
-
 import Bio from "../components/bio"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
@@ -126,7 +125,7 @@ export const pageQuery = graphql`
         imagelink
         featuredImage {
           childImageSharp {
-            fluid(maxWidth: 800) {
+            fluid(maxWidth: 1200) {
               ...GatsbyImageSharpFluid
             }
           }

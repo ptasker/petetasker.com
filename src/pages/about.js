@@ -47,9 +47,12 @@ const About = props => {
         </div>
         <div>
           <p>
-            Hey I'm Pete 👋. I'm a software developer located in Ottawa Canada.
-            I'm also a dad, general handyman around the house, and a generally
-            curious guy.
+            Hey I'm Pete{" "}
+            <span role="img" aria-label="Hi">
+              👋
+            </span>
+            . I'm a software developer located in Ottawa Canada. I'm also a dad,
+            general handyman around the house, and a generally curious guy.
           </p>
           <p>
             I currently work at{" "}
