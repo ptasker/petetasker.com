@@ -18,6 +18,7 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
           siteMetadata {
             title
             description
+            siteUrl
             social {
               twitter
             }
@@ -35,12 +36,7 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
   }
 
   const imageSrc = thumbnailFluid && thumbnail.childImageSharp.fluid.src
-
-  let origin = ""
-  if (typeof window !== "undefined") {
-    origin = window.location.origin
-  }
-  const image = origin + imageSrc
+  const image = site.siteMetadata.siteUrl + imageSrc
 
   return (
     <Helmet
