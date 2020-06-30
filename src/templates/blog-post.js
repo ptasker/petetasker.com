@@ -1,5 +1,5 @@
 import React from "react"
-import { Link, graphql } from "gatsby"
+import { graphql } from "gatsby"
 import ReactHtmlParser from "react-html-parser"
 import { Disqus } from "gatsby-plugin-disqus"
 import Bio from "../components/bio"
@@ -11,7 +11,6 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
   const post = data.markdownRemark
   const siteTitle = data.site.siteMetadata.title
   const { frontmatter } = post
-  const { previous, next } = pageContext
 
   let { featuredImage } = post.frontmatter
   let featuredImgFluid = undefined
@@ -69,30 +68,6 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
         </header>
         <section dangerouslySetInnerHTML={{ __html: post.html }} />
         {frontmatter.type === "post" && <Disqus config={disqusConfig} />}
-        {frontmatter.type === "post" && (
-          <nav className="post-nav">
-            <ul>
-              {previous && previous.frontmatter.type !== "page" && (
-                <li>
-                  {previous && (
-                    <Link to={previous.fields.slug} rel="prev">
-                      ← {ReactHtmlParser(previous.frontmatter.title)}
-                    </Link>
-                  )}
-                </li>
-              )}
-              {next && next.frontmatter.type !== "page" && (
-                <li>
-                  {next && (
-                    <Link to={next.fields.slug} rel="next">
-                      {ReactHtmlParser(next.frontmatter.title)} →
-                    </Link>
-                  )}
-                </li>
-              )}
-            </ul>
-          </nav>
-        )}
       </article>
     </Layout>
   )
