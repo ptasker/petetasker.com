@@ -2,6 +2,8 @@ import React from "react"
 import { graphql } from "gatsby"
 import ReactHtmlParser from "react-html-parser"
 import { Disqus } from "gatsby-plugin-disqus"
+import SubscribeForm from "../components/subscribe-form"
+
 import Bio from "../components/bio"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
@@ -67,6 +69,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
           )}
         </header>
         <section dangerouslySetInnerHTML={{ __html: post.html }} />
+        <SubscribeForm />
         {frontmatter.type === "post" && <Disqus config={disqusConfig} />}
       </article>
     </Layout>
