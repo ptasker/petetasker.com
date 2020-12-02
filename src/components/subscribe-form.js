@@ -22,7 +22,7 @@ const SubscribeForm = props => {
       className="subscribe-form"
       onSubmit={handleSubmit}
     >
-      <p className="hey">Hey, sometimes I post new content, so if you want to stay up to date sign up for my newsletter. Promise I won't spam you 🤞</p>
+      <p className="hey">Hey, sometimes I post new content, so if you want to stay up to date sign up for my newsletter. Promise I won't spam you  <span role="img" aria-label="crossed fingers emoji">🤞</span></p>
       <div className="message" dangerouslySetInnerHTML={{ __html: message }} />
 
       <div className="form-row">

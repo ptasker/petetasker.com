@@ -10,7 +10,7 @@ import PropTypes from "prop-types"
 import { Helmet } from "react-helmet"
 import { useStaticQuery, graphql } from "gatsby"
 
-const SEO = ({ description, lang, meta, title, thumbnail }) => {
+const SEO = ({ description, lang, meta, title, thumbnail, pathname }) => {
   const { site } = useStaticQuery(
     graphql`
       query {
@@ -30,13 +30,18 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
 
   const metaDescription = description || site.siteMetadata.description
   let thumbnailFluid = undefined
+  const canonical = pathname ? `${site.siteMetadata.siteUrl}${pathname}` : null
 
   if (thumbnail && thumbnail.hasOwnProperty("childImageSharp")) {
     thumbnailFluid = thumbnail.childImageSharp.fluid
   }
 
   const imageSrc = thumbnailFluid && thumbnail.childImageSharp.fluid.src
-  const image = site.siteMetadata.siteUrl + imageSrc
+
+  const image =
+    imageSrc
+    ? `${site.siteMetadata.siteUrl}${imageSrc}`
+    : null
 
   return (
     <Helmet
@@ -45,6 +50,16 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
       }}
       title={title}
       titleTemplate={`%s | ${site.siteMetadata.title}`}
+      link={
+        canonical
+        ? [
+            {
+              rel: "canonical",
+              href: canonical,
+            },
+          ]
+        : []
+      }
       meta={[
         {
           name: `description`,
@@ -63,22 +78,6 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
           content: `website`,
         },
         {
-          name: `og:image`,
-          content: image,
-        },
-        {
-          name: `twitter:image`,
-          content: image,
-        },
-        {
-          name: `twitter:image:width`,
-          content: 1200,
-        },
-        {
-          name: `twitter:image:height`,
-          content: 620,
-        },
-        {
           name: `twitter:card`,
           content: `summary_large_image`,
         },
@@ -94,7 +93,43 @@ const SEO = ({ description, lang, meta, title, thumbnail }) => {
           name: `twitter:description`,
           content: metaDescription,
         },
-      ].concat(meta)}
+
+      ].concat(
+        image
+        ? [
+            {
+              property: "og:image",
+              content: image,
+            },
+            {
+              property: "og:image:width",
+              content: 1200,
+            },
+            {
+              property: "og:image:height",
+              content: 620,
+            },
+            {
+              name: `twitter:image:width`,
+              content: 1200,
+            },
+            {
+              name: `twitter:image:height`,
+              content: 620,
+            },
+
+            {
+              name: "twitter:card",
+              content: "summary_large_image",
+            },
+          ]
+        : [
+            {
+              name: "twitter:card",
+              content: "summary",
+            },
+          ]
+      ).concat(meta)}
     />
   )
 }

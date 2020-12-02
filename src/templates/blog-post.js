@@ -9,7 +9,7 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import Img from "gatsby-image"
 
-const BlogPostTemplate = ({ data, pageContext, location }) => {
+const BlogPostTemplate = ({ data, pageContext, location, ...props }) => {
   const post = data.markdownRemark
   const siteTitle = data.site.siteMetadata.title
   const { frontmatter } = post
@@ -33,6 +33,7 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
         title={post.frontmatter.title}
         description={post.excerpt}
         thumbnail={featuredImage}
+        pathname={location.pathname}
       />
       {frontmatter.type === "post" && <Bio />}
       <article>
