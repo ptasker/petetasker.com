@@ -56,10 +56,10 @@ const About = props => {
           </p>
           <p>
             I currently work at{" "}
-            <a href="https://deliciousbrains.com" target="blank">
-              Delicious Brains
+            <a href="https://www.surveymonkey.com/" target="blank">
+               SurveyMonkey
             </a>{" "}
-            as a product developer.
+            as a Senior Software Developer.
           </p>
         </div>
       </div>
