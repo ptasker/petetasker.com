@@ -56,8 +56,8 @@ const About = props => {
           </p>
           <p>
             I currently work at{" "}
-            <a href="https://www.surveymonkey.com/" target="blank">
-               SurveyMonkey
+            <a href="https://github.com/ptasker" target="blank">
+               GitHub
             </a>{" "}
             as a Senior Software Developer.
           </p>
