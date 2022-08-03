@@ -56,7 +56,7 @@ const About = props => {
           </p>
           <p>
             I currently work at{" "}
-            <a href="https://github.com/ptasker" target="blank">
+            <a href="https://github.com/ptasker?" target="blank">
                GitHub
             </a>{" "}
             as a Senior Software Developer.
