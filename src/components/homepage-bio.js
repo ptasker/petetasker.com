@@ -1,5 +1,6 @@
 import React from "react"
 import Image from "gatsby-image"
+import { graphql } from 'gatsby'
 import Typewriter from "typewriter-effect"
 import { useStaticQuery } from "gatsby"
 import "../styles/intro.scss"
