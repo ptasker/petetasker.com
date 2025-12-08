@@ -1,0 +1,129 @@
+---
+import "../styles/main.scss";
+import { siteUrl, title as siteTitle, social } from "../consts";
+
+import twitter from "../../public/assets/twitter.svg";
+import rss from "../../public/assets/rss.svg";
+import linkedIn from "../../public/assets/linkedin.svg";
+import GB from "../../public/assets/ghostbusters.mp4";
+import VideoOverlay from "../components/VideoOverlay";
+
+const { title, isHome, description } = Astro.props;
+
+const twitterUrl = social.twitter
+  ? `https://twitter.com/${social.twitter.replace(/^@/, ``)}`
+  : null;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
+    <meta name="description" content={description || "Peter Tasker is a software developer located in Ottawa Ontario, Canada."} />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="site-head">
+        <div class="site-mast container">
+          <div class="site-mast-left">
+            <h1 class="site-banner-title">
+              <a href="/">{siteTitle}</a>
+            </h1>
+          </div>
+          <div class="site-mast-right">
+            <a
+              class="site-nav-item"
+              href={`https://www.linkedin.com/in/petertasker`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img class="site-nav-icon" src={linkedIn.src} alt="LinkedIn" />
+            </a>
+            {
+              social.twitter && (
+                <a
+                  href={twitterUrl}
+                  class="site-nav-item"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img class="site-nav-icon" src={twitter.src} alt="Twitter" />
+                </a>
+              )
+            }
+
+            <a
+              class="site-nav-item"
+              href={`https://feedly.com/i/subscription/feed/${siteUrl}/rss/`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img class="site-nav-icon" src={rss.src} alt="RSS Feed" />
+            </a>
+          </div>
+        </div>
+        {
+          isHome ? (
+            <div class="site-banner">
+              <div class="video-wrap">
+                <video
+                  class="video-bg"
+                  controls={false}
+                  muted
+                  autoplay
+                  loop
+                >
+                  <source src={GB} type="video/mp4" />
+                  <track />
+                </video>
+              </div>
+              <div class="video-overlay">
+                <VideoOverlay client:load />
+              </div>
+              <p class="site-banner-desc">{description}</p>
+            </div>
+          ) : null
+        }
+        <div class="container">
+          <nav class="site-nav">
+            <div class="site-nav-right">
+              <a class="site-nav-button" href="/about">
+                <span class="label">About</span>
+              </a>
+              <a class="site-nav-button" href="/contact">
+                <span class="label">Contact</span>
+              </a>
+              <a class="site-nav-button" href="/uses">
+                <span class="label">Uses</span>
+              </a>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      <div class="bg-white-wrap">
+        <main class="container">
+          <slot />
+        </main>
+      </div>
+      <footer>
+        <div class="container">
+          <hr />
+          <p>
+            <span class="muted">
+              <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+                Ecto-1
+              </a>{" "}
+              icon by Patengerie from the{" "}
+              <a href="http://thenounproject.com/">Noun Project</a>
+            </span>
+            © {new Date().getFullYear()}, Built with
+            {` `}
+            <a href="https://astro.build">Astro</a>
+          </p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
