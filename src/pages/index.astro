@@ -1,0 +1,60 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+// For now we will just use a glob import because we haven't set up content collections fully yet.
+// Using import.meta.glob as Astro.glob is deprecated.
+const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+const posts = Object.values(postModules) as any[];
+
+const sortedPosts = posts
+  .filter((post: any) => post.frontmatter.type === 'post')
+  .sort((a: any, b: any) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf());
+
+// Helper function to handle the link logic
+const getLink = (post: any) => {
+  if (post.frontmatter.permalink) {
+    return post.frontmatter.permalink;
+  }
+  // Fallback to slug from file path if no permalink
+    const slug = post.file.split('/').pop().split('.').shift();
+    return `/${slug}`;
+};
+
+---
+
+<Layout title="Home" isHome={true}>
+  <h2>From the Blog</h2>
+  <div class="post-list">
+    {sortedPosts.map((post) => {
+      const link = getLink(post);
+      const title = post.frontmatter.title || getLink(post);
+        // Featured Image handling needs adjustment for Astro
+        // Gatsby used gatsby-image. Astro uses the standard <img> tag or <Image /> component.
+        // For now, we'll skip the image if it's complicated to migrate without seeing the data structure,
+        // or try to use a relative path if available.
+        // Assuming frontmatter.featuredImage is a path relative to the md file or absolute.
+
+      return (
+        <article>
+           {/*
+            post.frontmatter.featuredImage && (
+            <a href={link}>
+               <img src={post.frontmatter.featuredImage} className="featured-image" />
+            </a>
+          )
+           */}
+          <header>
+            <h3>
+              <a href={link}>{title}</a>
+            </h3>
+            <small>{new Date(post.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</small>
+          </header>
+          <section class="post-excerpt">
+            <p set:html={post.frontmatter.description || post.excerpt || ''}></p>
+          </section>
+        </article>
+      )
+    })}
+  </div>
+</Layout>

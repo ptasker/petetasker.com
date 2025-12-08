@@ -1,0 +1,40 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+  const posts = Object.values(postModules) as any[];
+
+  return posts.map((post: any) => {
+    let slug = post.frontmatter.permalink;
+    if (!slug) {
+        const fileSlug = post.file.split('/').pop().split('.').shift();
+        slug = `/${fileSlug}`;
+    }
+
+    // remove leading slash for Astro param
+    const paramSlug = slug.startsWith('/') ? slug.slice(1) : slug;
+
+    return {
+      params: { slug: paramSlug },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = post;
+---
+
+<Layout title={post.frontmatter.title} description={post.frontmatter.description || post.excerpt}>
+  <article>
+    <header>
+      <h1>{post.frontmatter.title}</h1>
+      <p class="date-row">
+        {new Date(post.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+      </p>
+    </header>
+    <Content />
+    <hr />
+  </article>
+</Layout>

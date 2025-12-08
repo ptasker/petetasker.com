@@ -1,0 +1,40 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { author } from "../consts";
+
+const siteTitle = "About";
+---
+
+<Layout title={siteTitle} description="About Pete">
+  <h2>About</h2>
+  <div class="about-row">
+    <div class="avatar">
+      <img
+        src="/assets/profile-pic.png"
+        alt={author.name}
+        style={{
+          borderRadius: `50%`,
+            width: '250px',
+            height: '250px'
+        }}
+      />
+    </div>
+    <div>
+      <p>
+        Hey I'm Pete{" "}
+        <span role="img" aria-label="Hi">
+          👋
+        </span>
+        . I'm a software developer located in Ottawa Canada. I'm also a dad,
+        general handyman around the house, and a generally curious guy.
+      </p>
+      <p>
+        I currently work at{" "}
+        <a href="https://github.com/ptasker?" target="blank">
+           GitHub
+        </a>{" "}
+        as a Senior Software Developer.
+      </p>
+    </div>
+  </div>
+</Layout>
