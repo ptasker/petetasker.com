@@ -2,9 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 
 export async function getStaticPaths() {
-  const posts = await Astro.glob('../../content/blog/**/*.md');
+  const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+  const posts = Object.values(postModules) as any[];
 
-  return posts.map(post => {
+  return posts.map((post: any) => {
     let slug = post.frontmatter.permalink;
     if (!slug) {
         const fileSlug = post.file.split('/').pop().split('.').shift();

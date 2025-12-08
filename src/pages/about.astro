@@ -1,8 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { author } from "../consts";
-// Assuming the profile-pic.png is in public/assets or content/assets
-import profilePic from "../../public/assets/profile-pic.png";
 
 const siteTitle = "About";
 ---
@@ -11,9 +9,8 @@ const siteTitle = "About";
   <h2>About</h2>
   <div class="about-row">
     <div class="avatar">
-        {/* Using standard img for now, could be optimized with Astro Image later */}
       <img
-        src={profilePic.src}
+        src="/assets/profile-pic.png"
         alt={author.name}
         style={{
           borderRadius: `50%`,
