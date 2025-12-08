@@ -1,0 +1,21 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PHPStorm, MAMP and Xdebug - How to keep (some of) your hair | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>PHPStorm, MAMP and Xdebug - How to keep (some of) your hair</h1> <p class="date-row"> October 16, 2017 </p> </header> <blockquote>
+<p>I’m mostly logging this here for my own benefit, but if the Google gods brought your here, sweet!</p>
+</blockquote>
+<p>Just came across another fun quirk with running Xdebug, MAMP and PHPStorm together. ????</p>
+<p>I’ve talked about this combination causing me <a href="https://petetasker.com/mamp-xdebug-phpstorm-and-symlink-madness/">issues in the past</a>, but this is a whole new situation that killed a couple hours for me.</p>
+<p>So, it appears that for PHPStorm to pick up Xdebug correctly, the <code>xdebug.remote_host</code> variable needs to be set correctly. It normally is, if you copy-pasta some of the tutorials on the internet.</p>
+<p>Unfortunately, for some reason, this Monday morning, setting this value to <code>localhost</code> no longer worked. Why? Welp, localhost is pointing to an invalid folder location, according to MAMP. Apparently this was enough for PHPStorm to freak out and just not run Xdebug. Period.</p>
+<p>Fun!</p>
+<p>So how’d I figure out this was the reason for Xdebug throwing up?</p>
+<p>The PHPStorm docs of course! Wayyyyy at the bottom of <a href="https://confluence.jetbrains.com/display/PhpStorm/Validating+Your+Debugging+Configuration#ValidatingYourDebuggingConfiguration-Remotehostisconfiguredas&#x27;localhost&#x27;despiteserverhostisprobablynotlocal">this page</a> it’s plainly stated:</p>
+<blockquote>
+<h3 id="remote-host-is-configured-as-localhost-despite-server-host-is-probably-not-local">Remote host is configured as ‘localhost’ despite server host is probably not local</h3>
+<p>The URL to validation script contains something different from localhost, but the xdebug.remote_host value is not set and so is using the default value of localhost, or is set to localhost or 127.0.0.1.</p>
+</blockquote>
+<p><a href="https://www.youtube.com/watch?v=pU96c_3RXXU">#themoyouknow</a></p>
+<p><img src="https://i1.wp.com/media.giphy.com/media/d2YVk2ZRuQuqvVlu/giphy.gif?w=525&#x26;ssl=1" alt=""></p> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>

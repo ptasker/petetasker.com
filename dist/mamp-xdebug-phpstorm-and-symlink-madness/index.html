@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MAMP, Xdebug, PHPStorm and symlink madness | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>MAMP, Xdebug, PHPStorm and symlink madness</h1> <p class="date-row"> July 30, 2016 </p> </header> <p>Ask any PHP developer and they’ll tell you <a href="https://xdebug.org/">Xdebug</a> is the best thing since sliced bread. While true, it’s also one of the biggest pain in the asses to setup. I’ve probably set it up, in various incarnations, close to 10 times.</p>
+<p>There’s always something that get’s me caught up and messed up. This time I decided to document how I was able to get it working <em>this time</em>, so hopefully I don’t have suffer through this again.</p>
+<p>I followed <a href="http://manovotny.com/setup-phpstorm-xdebug-mamp-debugging/">Michael Novotny’s post </a>on this, and it <em>almost</em> works. There’s just one missing piece, for me, and that was how to handle symlinks in your plugins.</p>
+<p>This overview assumes a few things. You’re on a recent version of OSX, you have MAMP Pro 3 installed, and you’re using PHPStorm.</p>
+<p><strong>Step 0: Use the same version of PHP for your CLI <em>and</em> your webserver.</strong></p>
+<p>Time and again I’ve seen people have issues with their CLI PHP version and Web server PHP version not matching up. This can cause all sorts of weirdness, especially with Xdebug, so make sure you’re using your MAMP version of PHP on your CLI.</p>
+<p>This can be as simple as adding the MAMP PHP version to your $PATH.</p>
+<p>In your <code>~/.bash_profile</code> file you can add something like this.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>echo $PATH | grep -q -s "/Applications/MAMP/bin/php/php5.6.10/bin"</span></span>
+<span class="line"><span>if [ $? -eq 1 ] ; then</span></span>
+<span class="line"><span>export MAMP_PATH=/Applications/MAMP/bin/php/php5.6.10/bin</span></span>
+<span class="line"><span>export PATH="$MAMP_PATH:$PATH"</span></span>
+<span class="line"><span>fi</span></span>
+<span class="line"><span></span></span></code></pre>
+<p><strong>Step 1:Make sure Xdebug is installed.</strong></p>
+<p>This one’s a gimme, but still a point worth making to cover all the bases. Make sure you’ve got Xdebug running and <code>remote_enable=1</code> is set in your php.ini. There’s plenty of resources on the inter-web’s for this.</p>
+<p>You can check if Xdebug is available, by running <code>php --version</code> in your CLI. You can further check what kind of Xdebug settings your have enabled by running <code>php -i | grep xdebug</code></p>
+<p><strong>Step 2: Setting up PHPStorm</strong></p>
+<p>Make sure PHPStorm is using the same PHP Interpreter you’re using for everything else. You can set this in Preferences > Languages &#x26; Frameworks > PHP and selecting the MAMP PHP version you’re using.</p>
+<p><img  src="/_astro/Interpreters_and_Preferences_and_wpmdb-replace_php_-_wp_-____Sites_wp_-1000x599.BJHcdaX1_Z1u6B1f.webp" alt="PHP Storm settings" loading="lazy" decoding="async" fetchpriority="auto" width="1000" height="599"></p>
+<p>After that, essentially follow <a href="http://manovotny.com/setup-phpstorm-xdebug-mamp-debugging/">Michael’s guide</a> for setting up PHPStorm with the debug configurations, once PHP is all set up.</p>
+<p><strong>Step 3: Symlinks</strong></p>
+<p>If you’re using plugins in your local PHP install that are symlinked (and many plugin developers do this), make sure you map those folders for Xdebug and PHPStorm! This is where I got caught many times. I even needed to map the base of my WP install, since I had checked the ‘Use path mappings’ setting.</p>
+<p><img  src="/_astro/Servers_and_Run_Debug_Configurations.CFX4rvII_1JMViE.webp" alt="Servers_and_Run_Debug_Configurations" loading="lazy" decoding="async" fetchpriority="auto" width="1349" height="834"></p>
+<p>For me, that’s all it took to get things running. Without the explicit path mappings for the symlinks, Xdebug half worked – which was <em>super</em> confusing…</p>
+<p>I should note that if you’re running multiple sites on your MAMP install, and 2 of these sites are talking to each other in any way (via AJAX or the WP Rest API etc.), make sure ONLY ONE is running Xdebug. Not sure what the reason is, but the workaround is easy enough. Just use another version of PHP within MAMP, one that doesn’t use Xdebug.</p>
+<p>Hope this helps someone else.</p> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>
