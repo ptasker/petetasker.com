@@ -2,12 +2,13 @@
 import ProgrammerLayout from '../layouts/ProgrammerLayout.astro';
 
 export async function getStaticPaths() {
-  const posts = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+  const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
 
-  return Object.values(posts).map((post: any) => {
+  return Object.entries(postModules).map(([path, module]: [string, any]) => {
+      const post = { ...module, file: path };
       const slug = post.frontmatter.permalink
         ? post.frontmatter.permalink.replace(/^\//, '') // Remove leading slash for Astro dynamic route
-        : post.file.split('/').pop().split('.').shift();
+        : path.split('/').pop()?.split('.').shift();
 
       return {
         params: { slug },

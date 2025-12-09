@@ -3,7 +3,10 @@ import ProgrammerLayout from "../layouts/ProgrammerLayout.astro";
 
 // Use import.meta.glob to fetch all MD files
 const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
-const posts = Object.values(postModules) as any[];
+const posts = Object.entries(postModules).map(([path, module]: [string, any]) => ({
+  ...module,
+  file: path
+}));
 
 const sortedPosts = posts
   .filter((post: any) => post.frontmatter.type === 'post')
@@ -45,7 +48,7 @@ const getLink = (post: any) => {
                   {date}
                </div>
               <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                <a href={link} class="before:absolute before:inset-0">
+                <a href={link}>
                     {title}
                 </a>
               </h3>
