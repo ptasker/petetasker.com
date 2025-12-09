@@ -1,24 +1,18 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import ProgrammerLayout from '../layouts/ProgrammerLayout.astro';
 
 export async function getStaticPaths() {
-  const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
-  const posts = Object.values(postModules) as any[];
+  const posts = import.meta.glob('../../content/blog/**/*.md', { eager: true });
 
-  return posts.map((post: any) => {
-    let slug = post.frontmatter.permalink;
-    if (!slug) {
-        const fileSlug = post.file.split('/').pop().split('.').shift();
-        slug = `/${fileSlug}`;
-    }
+  return Object.values(posts).map((post: any) => {
+      const slug = post.frontmatter.permalink
+        ? post.frontmatter.permalink.replace(/^\//, '') // Remove leading slash for Astro dynamic route
+        : post.file.split('/').pop().split('.').shift();
 
-    // remove leading slash for Astro param
-    const paramSlug = slug.startsWith('/') ? slug.slice(1) : slug;
-
-    return {
-      params: { slug: paramSlug },
-      props: { post },
-    };
+      return {
+        params: { slug },
+        props: { post },
+      };
   });
 }
 
@@ -26,15 +20,28 @@ const { post } = Astro.props;
 const { Content } = post;
 ---
 
-<Layout title={post.frontmatter.title} description={post.frontmatter.description || post.excerpt}>
-  <article>
-    <header>
-      <h1>{post.frontmatter.title}</h1>
-      <p class="date-row">
-        {new Date(post.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-      </p>
+<ProgrammerLayout title={post.frontmatter.title} description={post.frontmatter.description}>
+  <article class="max-w-4xl mx-auto">
+    <header class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+      <div class="text-sm font-mono text-green-600 dark:text-green-400 mb-2">
+         {new Date(post.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+      </div>
+      <h1 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+        {post.frontmatter.title}
+      </h1>
+      {post.frontmatter.description && (
+        <p class="text-xl text-slate-600 dark:text-slate-400 font-light">
+          {post.frontmatter.description}
+        </p>
+      )}
     </header>
-    <Content />
-    <hr />
+
+    <div class="prose prose-lg prose-slate dark:prose-invert max-w-none
+                prose-headings:font-bold prose-headings:tracking-tight
+                prose-code:text-green-600 dark:prose-code:text-green-400 prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700
+                ">
+      <Content />
+    </div>
   </article>
-</Layout>
+</ProgrammerLayout>

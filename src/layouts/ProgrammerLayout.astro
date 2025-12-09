@@ -1,0 +1,126 @@
+---
+import "../styles/reset.scss"; // Keeping reset for now, or could rely on Tailwind preflight
+import ThemeToggle from '../components/ThemeToggle.astro';
+import VideoBackground from '../components/VideoBackground.astro';
+import { siteUrl, title as siteTitle, social } from "../consts";
+
+interface Props {
+	title: string;
+	description?: string;
+	isHome?: boolean;
+}
+
+const { title, description, isHome = false } = Astro.props;
+
+const assets = {
+  twitter: "/assets/twitter.svg",
+  rss: "/assets/rss.svg",
+  linkedIn: "/assets/linkedin.svg",
+};
+
+const twitterUrl = social.twitter
+  ? `https://twitter.com/${social.twitter.replace(/^@/, ``)}`
+  : null;
+
+// Ensure dark mode persistence
+const script = `
+  if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+  } else {
+      document.documentElement.classList.remove('dark')
+  }
+`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description || "Peter Tasker is a software developer located in Ottawa Ontario, Canada."} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+		<title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
+        <script is:inline set:html={script}></script>
+	</head>
+	<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-mono selection:bg-green-300 dark:selection:bg-green-700 selection:text-black dark:selection:text-white transition-colors duration-300">
+
+        <!-- Header -->
+		<header class="border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo / Title -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="font-bold text-xl sm:text-2xl tracking-tight text-slate-800 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300 transition-colors">
+                            <span class="text-green-600 dark:text-green-400">&lt;</span>{siteTitle}<span class="text-green-600 dark:text-green-400">/&gt;</span>
+                        </a>
+                    </div>
+
+                    <!-- Navigation -->
+                    <nav class="hidden md:flex space-x-8">
+                        <a href="/about" class="text-slate-600 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
+                        <a href="/contact" class="text-slate-600 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
+                        <a href="/uses" class="text-slate-600 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Uses</a>
+                    </nav>
+
+                    <!-- Right Side: Social & Toggle -->
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden sm:flex items-center space-x-4 border-r border-slate-300 dark:border-slate-700 pr-4">
+                             <a href="#" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
+                                <img src={assets.linkedIn} alt="LinkedIn" class="w-5 h-5 dark:invert" />
+                             </a>
+                             {social.twitter && (
+                                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
+                                    <img src={assets.twitter} alt="Twitter" class="w-5 h-5 dark:invert" />
+                                </a>
+                             )}
+                             <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
+                                <img src={assets.rss} alt="RSS" class="w-5 h-5 dark:invert" />
+                             </a>
+                        </div>
+                        <ThemeToggle />
+                        <!-- Mobile menu button (simple implementation, can be expanded) -->
+                         <div class="md:hidden flex items-center">
+                            <!-- Mobile menu trigger could go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Navigation Menu (Hidden by default, simple CSS hover or JS needed for real toggle, keeping simple for now) -->
+            <div class="md:hidden border-t border-slate-200 dark:border-slate-700 flex justify-center space-x-6 py-2">
+                 <a href="/about" class="text-sm text-slate-600 dark:text-slate-300">About</a>
+                 <a href="/contact" class="text-sm text-slate-600 dark:text-slate-300">Contact</a>
+                 <a href="/uses" class="text-sm text-slate-600 dark:text-slate-300">Uses</a>
+            </div>
+		</header>
+
+        <!-- Hero Section -->
+        {isHome && (
+            <section class="w-full bg-black">
+                <VideoBackground description={description} />
+            </section>
+        )}
+
+        <!-- Main Content -->
+		<main class="flex-grow w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+			<slot />
+		</main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+            <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+                 <p class="text-slate-500 dark:text-slate-400 text-sm">
+                    © {new Date().getFullYear()} {siteTitle}. Built with <a href="https://astro.build" class="text-green-600 dark:text-green-400 hover:underline">Astro</a>.
+                </p>
+                <div class="mt-4 md:mt-0 text-slate-400 text-xs text-center md:text-right">
+                     <span class="block md:inline">
+                        <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798" class="hover:text-slate-600 dark:hover:text-slate-300">Ecto-1 icon by Patengerie</a>
+                     </span>
+                </div>
+            </div>
+        </footer>
+	</body>
+</html>
