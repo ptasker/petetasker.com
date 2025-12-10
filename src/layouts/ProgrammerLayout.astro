@@ -70,15 +70,15 @@ const script = `
                     <div class="flex items-center space-x-4">
                         <div class="hidden sm:flex items-center space-x-4 border-r border-slate-300 dark:border-slate-700 pr-4">
                              <a href="#" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                <img src={assets.linkedIn} alt="LinkedIn" class="w-5 h-5 dark:invert" />
+                                <img src={assets.linkedIn} alt="LinkedIn" class="w-5 h-5 brightness-0 dark:brightness-100" />
                              </a>
                              {social.twitter && (
                                 <a href={twitterUrl} target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                    <img src={assets.twitter} alt="Twitter" class="w-5 h-5 dark:invert" />
+                                    <img src={assets.twitter} alt="Twitter" class="w-5 h-5 brightness-0 dark:brightness-100" />
                                 </a>
                              )}
                              <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                <img src={assets.rss} alt="RSS" class="w-5 h-5 dark:invert" />
+                                <img src={assets.rss} alt="RSS" class="w-5 h-5 brightness-0 dark:brightness-100" />
                              </a>
                         </div>
                         <ThemeToggle />
@@ -111,16 +111,44 @@ const script = `
 
         <!-- Footer -->
         <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
-            <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-                 <p class="text-slate-500 dark:text-slate-400 text-sm">
-                    © {new Date().getFullYear()} {siteTitle}. Built with <a href="https://astro.build" class="text-green-600 dark:text-green-400 hover:underline">Astro</a>.
-                </p>
-                <div class="mt-4 md:mt-0 text-slate-400 text-xs text-center md:text-right">
-                     <span class="block md:inline">
-                        <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798" class="hover:text-slate-600 dark:hover:text-slate-300">Ecto-1 icon by Patengerie</a>
-                     </span>
+            <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Ecto-1 Car Animation -->
+                    <div class="ecto-1-container" style="max-width: 256px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges" class="w-full h-auto">
+                            <g id="car">
+                                <path fill="currentColor" d="M6 40h2v3H6zM8 42h2v1H8zM10 42h2v3h-2zM8 45h2v1H8zM6 43h2v3H6zM2 40h2v3H2zM4 37h2v3H4zM2 37h2v3H2zM4 35h4v2H4zM8 35h2v2H8zM10 35h4v2h-4zM14 35h4v2h-4zM18 35h4v2h-4zM22 35h4v2h-4zM26 35h4v2h-4zM30 35h4v2h-4zM34 35h4v2h-4zM38 35h4v2h-4zM42 35h4v2h-4zM46 35h4v2h-4zM50 35h4v2h-4zM54 35h4v2h-4zM58 35h4v2h-4zM62 37h2v3h-2zM60 37h2v3h-2zM58 40h2v3h-2zM60 40h2v3h-2zM58 43h2v1h-2zM56 43h2v1h-2zM54 43h2v1h-2zM52 43h2v1h-2zM50 43h2v1h-2zM48 43h2v1h-2zM46 43h2v1h-2zM44 43h2v1h-2zM42 43h2v1h-2zM40 43h2v1h-2zM38 43h2v1h-2zM36 43h2v1h-2zM34 43h2v1h-2zM32 43h2v1h-2zM30 43h2v1h-2zM28 43h2v1h-2zM26 43h2v1h-2zM24 43h2v1h-2zM22 43h2v1h-2zM20 43h2v1h-2zM18 43h2v1h-2zM16 43h2v1h-2zM14 43h2v1h-2zM12 43h2v1h-2zM46 41h2v2h-2zM48 41h2v2h-2zM50 41h2v2h-2zM52 41h2v2h-2zM46 39h2v2h-2zM48 39h2v2h-2zM50 39h2v2h-2zM52 39h2v2h-2zM44 37h2v2h-2zM46 37h2v2h-2zM48 37h2v2h-2zM50 37h2v2h-2zM52 37h2v2h-2zM54 37h2v2h-2zM56 37h2v2h-2zM44 39h2v2h-2zM42 39h2v2h-2zM42 41h2v2h-2zM24 38h4v3h-4zM24 37h1v1h-1zM27 37h1v1h-1zM32 37h4v6h-4zM36 37h4v6h-4zM40 37h4v6h-4zM20 36h2v1h-2zM20 37h2v2h-2zM22 37h2v2h-2zM22 36h2v1h-2zM18 33h2v1h-2zM18 34h2v1h-2zM20 33h2v1h-2zM20 34h2v1h-2zM22 31h2v2h-2zM24 31h2v2h-2zM24 29h2v2h-2zM26 29h2v2h-2zM28 29h2v2h-2zM30 29h2v2h-2zM32 29h2v2h-2zM34 29h2v2h-2zM36 29h2v2h-2zM38 29h2v2h-2zM40 29h2v2h-2zM42 29h2v2h-2zM44 29h2v2h-2zM46 29h2v2h-2zM48 29h2v2h-2zM50 29h2v2h-2zM52 29h2v2h-2zM54 31h2v2h-2zM56 33h2v2h-2zM58 33h2v2h-2zM60 33h2v2h-2zM54 30h2v1h-2zM54 33h2v2h-2zM52 33h2v2h-2zM50 33h2v2h-2zM48 33h2v2h-2zM46 33h2v2h-2zM44 33h2v2h-2zM42 33h2v2h-2zM40 33h2v2h-2zM38 33h2v2h-2zM36 33h2v2h-2zM34 33h2v2h-2zM32 33h2v2h-2zM30 33h2v2h-2zM28 33h2v2h-2zM26 33h2v2h-2zM24 33h2v2h-2zM22 33h2v2h-2zM28 28h2v1h-2zM30 28h2v1h-2zM32 28h2v1h-2zM34 28h2v1h-2zM36 28h2v1h-2zM38 28h2v1h-2zM40 28h2v1h-2zM42 28h2v1h-2zM44 28h2v1h-2zM46 28h2v1h-2zM48 28h2v1h-2zM30 27h2v1h-2zM32 27h2v1h-2zM34 27h2v1h-2zM36 27h2v1h-2zM38 27h2v1h-2zM40 27h2v1h-2zM42 27h2v1h-2zM44 27h2v1h-2zM46 27h2v1h-2zM34 25h2v2h-2zM36 25h2v2h-2zM38 25h2v2h-2zM40 25h2v2h-2zM42 25h2v2h-2zM42 23h2v2h-2zM44 23h2v2h-2zM46 23h2v2h-2zM42 21h2v2h-2zM44 21h2v2h-2zM46 21h2v2h-2zM38 23h2v1h-2zM40 23h2v1h-2zM38 21h2v2h-2zM40 21h2v2h-2zM36 21h2v2h-2zM48 19h2v2h-2zM48 21h2v2h-2zM48 23h2v2h-2zM50 23h2v2h-2zM46 19h2v1h-2zM46 25h2v1h-2zM50 25h2v4h-2zM52 25h2v4h-2zM48 27h2v1h-2zM50 21h2v2h-2zM52 21h2v2h-2zM52 19h2v2h-2z"/>
+                                <!-- Slight shake animation -->
+                                <animateTransform
+                                    attributeName="transform"
+                                    type="translate"
+                                    values="0,0; 0.5,-0.3; -0.3,0.3; 0,0"
+                                    dur="0.15s"
+                                    repeatCount="indefinite"
+                                />
+                            </g>
+                        </svg>
+                    </div>
+                    
+                    <div class="flex flex-col items-center text-center">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-2">
+                            © {new Date().getFullYear()} {siteTitle}. Built with <a href="https://astro.build" class="text-green-600 dark:text-green-400 hover:underline">Astro</a>.
+                        </p>
+                        <div class="text-slate-400 text-xs">
+                            <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798" class="hover:text-slate-600 dark:hover:text-slate-300">Ecto-1 icon by Patengerie</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </footer>
 	</body>
 </html>
+
+<style>
+    .ecto-1-container {
+        filter: grayscale(0);
+    }
+    html.dark .ecto-1-container {
+        filter: grayscale(0) brightness(0.9);
+    }
+</style>
