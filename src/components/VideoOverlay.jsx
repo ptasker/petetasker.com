@@ -13,7 +13,7 @@ const VideoOverlay = () => {
       <div className="text-2xl md:text-4xl lg:text-5xl uppercase font-mono text-yellow-400 h-16" style={{ textShadow: '1px 1px 2px black' }}>
         <Typewriter
           options={{
-            strings: ["Programmer", "Dad", "General Handyman", "Pizza Maker", "Beer Drinker"],
+            strings: ["Programmer", "Dad", "General Handyman", "Pizza Maker", "Ghostbuster"],
             autoStart: true,
             loop: true,
             wrapperClassName: "inline-block",
