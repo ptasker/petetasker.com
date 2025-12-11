@@ -1,0 +1,81 @@
+---
+import ProgrammerLayout from "../layouts/ProgrammerLayout.astro";
+
+// Use import.meta.glob to fetch all MD files
+const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+const posts = Object.entries(postModules).map(([path, module]: [string, any]) => ({
+  ...module,
+  file: path
+}));
+
+const sortedPosts = posts
+  .filter((post: any) => post.frontmatter.type === 'post')
+  .sort((a: any, b: any) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf());
+
+// Helper function to handle the link logic
+const getLink = (post: any) => {
+  if (post.frontmatter.permalink) {
+    return post.frontmatter.permalink;
+  }
+  // Fallback to slug from file path if no permalink
+    const slug = post.file.split('/').pop().split('.').shift();
+    return `/${slug}`;
+};
+
+---
+
+<ProgrammerLayout title="Home" isHome={true}>
+  <div class="mb-8">
+    <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-100 border-l-4 border-green-500 pl-4 mb-2">
+      From the Blog
+    </h2>
+    <p class="text-slate-600 dark:text-slate-400 pl-5 text-sm font-mono">
+      // Latest updates and thoughts
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {sortedPosts.map((post) => {
+      const link = getLink(post);
+      const title = post.frontmatter.title || getLink(post);
+      const date = new Date(post.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      
+      // Calculate read time
+      const rawContent = post.rawContent ? post.rawContent() : '';
+      const words = rawContent.split(/\s+/).length;
+      const readTime = Math.ceil(words / 200);
+
+      return (
+        <article class="bg-white dark:bg-slate-800 rounded-lg shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 transition-all duration-200 flex flex-col overflow-hidden group">
+          <div class="p-6 flex-grow">
+            <header class="mb-3">
+               <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-mono mb-2">
+                  <span class="text-green-600 dark:text-green-400">{date}</span>
+                  <span>•</span>
+                  <span class="flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    {readTime} min
+                  </span>
+               </div>
+              <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                <a href={link}>
+                    {title}
+                </a>
+              </h3>
+            </header>
+            <section class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3" set:html={post.frontmatter.description || post.excerpt || ''}>
+            </section>
+          </div>
+          <div class="px-6 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-100 dark:border-slate-700">
+             <span class="text-xs font-mono text-slate-500 dark:text-slate-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                read_post() &rarr;
+             </span>
+          </div>
+        </article>
+      )
+    })}
+  </div>
+</ProgrammerLayout>

@@ -1,0 +1,20 @@
+---
+import ProgrammerLayout from "../../layouts/ProgrammerLayout.astro";
+import { Content as UsesContent, frontmatter } from "../../../content/blog/uses.md";
+
+const { title, description } = frontmatter;
+---
+
+<ProgrammerLayout title={title} description={description || ""}>
+  <article class="max-w-4xl mx-auto">
+    <header class="mb-8 border-b border-slate-200 dark:border-slate-700 pb-2">
+      <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{title}</h1>
+    </header>
+    <div class="prose prose-lg prose-slate dark:prose-invert max-w-none
+                prose-headings:font-bold prose-headings:tracking-tight
+                prose-code:text-green-600 dark:prose-code:text-green-400 prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700">
+       <UsesContent />
+    </div>
+  </article>
+</ProgrammerLayout>

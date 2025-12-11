@@ -1,0 +1,113 @@
+---
+import ProgrammerLayout from '../layouts/ProgrammerLayout.astro';
+import CodeBlock from '../components/CodeBlock.astro';
+
+export async function getStaticPaths() {
+  const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+
+  return Object.entries(postModules).map(([path, module]: [string, any]) => {
+      const post = { ...module, file: path };
+      const slug = post.frontmatter.permalink
+        ? post.frontmatter.permalink.replace(/^\//, '') // Remove leading slash for Astro dynamic route
+        : path.split('/').pop()?.split('.').shift();
+
+      return {
+        params: { slug },
+        props: { post },
+      };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = post;
+
+// Calculate read time (rough estimate: 200 words per minute)
+// Get the raw content from the markdown file
+const rawContent = post.rawContent ? post.rawContent() : '';
+const words = rawContent.split(/\s+/).length;
+const readTime = Math.ceil(words / 200);
+
+// Format date
+const formattedDate = new Date(post.frontmatter.date).toLocaleDateString('en-US', { 
+  year: 'numeric', 
+  month: 'short', 
+  day: 'numeric' 
+});
+
+// Get tags/categories
+const tags = post.frontmatter.tag || [];
+const categories = post.frontmatter.category || [];
+const allTags = [...new Set([...categories, ...tags])].filter(Boolean);
+---
+
+<ProgrammerLayout title={post.frontmatter.title} description={post.frontmatter.description}>
+  <article class="max-w-4xl mx-auto">
+    <header class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+      <h1 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+        {post.frontmatter.title}
+      </h1>
+      {post.frontmatter.description && (
+        <p class="text-xl text-slate-600 dark:text-slate-400 font-light mb-6">
+          {post.frontmatter.description}
+        </p>
+      )}
+      
+      <!-- Post metadata -->
+      <div class="flex flex-wrap items-center gap-4 text-sm text-slate-600 dark:text-slate-400 font-mono">
+        <!-- Date -->
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>{formattedDate}</span>
+        </div>
+
+        <!-- Read time -->
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>{readTime} min read</span>
+        </div>
+
+        <!-- Tags -->
+        {allTags.length > 0 && (
+          <div class="flex items-center gap-2 flex-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            {allTags.map((tag: string, index: number) => (
+              <>
+                <a 
+                  href={`/tags/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+                  class="text-green-600 dark:text-green-400 hover:underline"
+                >
+                  {tag}
+                </a>
+                {index < allTags.length - 1 && <span class="text-slate-400">,</span>}
+              </>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+
+    <div class="prose prose-lg prose-slate dark:prose-invert max-w-none
+                prose-headings:font-bold prose-headings:tracking-tight
+                prose-code:text-green-600 dark:prose-code:text-green-400 prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-code:font-mono prose-code:text-sm
+                prose-pre:bg-slate-900 dark:prose-pre:bg-slate-950 prose-pre:border prose-pre:border-slate-700 dark:prose-pre:border-slate-600 prose-pre:rounded-lg prose-pre:shadow-lg prose-pre:my-6
+                prose-a:text-green-600 dark:prose-a:text-green-400 prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-strong:font-bold
+                prose-blockquote:border-l-green-500 prose-blockquote:border-l-4 prose-blockquote:pl-4 prose-blockquote:italic
+                ">
+      <Content />
+    </div>
+  </article>
+  
+  <CodeBlock />
+</ProgrammerLayout>
