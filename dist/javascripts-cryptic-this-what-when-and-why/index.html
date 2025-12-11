@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>JavaScript&#39;s cryptic &#39;this&#39; - what, when and why | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>JavaScript&#39;s cryptic &#39;this&#39; - what, when and why</h1> <p class="date-row"> November 30, 2017 </p> </header> <p>Before MDN started to organize their JavaScript documentation, finding answers to your JavaScript questions often landed you on Stack Overflow.</p>
+<p>Welp, these days MDN has mostly done away with that practice, that is, except if you’re looking for answers around the usage of JavaScript’s <code>this</code> keyword.</p>
+<p>The <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">documentation is great</a>, it really is, but it’s not exactly full of helpful, real-world examples. So I thought I’d put together a few tips and tricks about the ever so magical <code>this</code> keyword.</p>
+<h3 id="old-skool-js">Old-skool JS</h3>
+<blockquote>
+<p>“Back in my day we had to alert out our objects!”</p>
+</blockquote>
+<p>Ok, so yeah, if you run <code>console.log(this)</code> in your dev console you’ll <em>generally</em> see that by default, <code>this = Window{}</code>. Super helpful…?</p>
+<p>It gets more interesting when you check the value of <code>this</code> inside a function:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> mahFunc</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#E1E4E8">    console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">this</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">mahFunc</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6A737D">// Window{}</span></span></code></pre>
+<p>You should still see the Window object. Ok so, nothing new here.</p>
+<p>But what if you add <code>'use strict'</code>?</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> mahFunc</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#9ECBFF">    'use strict'</span></span>
+<span class="line"><span style="color:#E1E4E8">    console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">this</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"><span style="color:#6A737D">// undefined</span></span>
+<span class="line"></span></code></pre>
+<p>Hmm.</p>
+<p>Ok now, but what if you call <code>mahFunc()</code> on the Window global (since it’s a global function)?</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> mahFunc</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#9ECBFF">    'use strict'</span></span>
+<span class="line"><span style="color:#E1E4E8">    console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">this</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">window.</span><span style="color:#B392F0">mahFunc</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6A737D">// Window</span></span>
+<span class="line"></span></code></pre>
+<p>Huh?</p>
+<p>Strict mode is a funny beast, but it generally makes errors more obvious and cleans up your JavaScript. Something not mentioned in the MDN docs is that bundlers/loaders/concatenators like Webpack/Browserify, may have strict mode enabled by default. You might end up with some wacky loader that enables it with out you knowing. So keep an eye out if you ever see your <code>this</code> call returning something funny.</p>
+<h2 id="call-me-plz">Call me plz</h2>
+<p>Ok so <code>this</code> in a global context is weird, but who doesn’t use objects and ES2015 classes these days? If you’d like to use a <em>different</em> value for <code>this</code>, (as-in not <code>undefined</code> or <code>Window</code>) inside your function, you can pass a context with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call"><code>.call()</code></a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply"><code>.apply()</code></a>. I always remember these with ‘yadda-yadda.prototype.call()’.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> mahFunc</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">this</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> config</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#B392F0">    stepOne</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#6A737D">        //do step one</span></span>
+<span class="line"><span style="color:#E1E4E8">    },</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    stepTwo</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#6A737D">        //do step 2</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">mahFunc.</span><span style="color:#B392F0">call</span><span style="color:#E1E4E8">(config);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">//{stepOne: ƒ, stepTwo: ƒ}</span></span>
+<span class="line"></span></code></pre>
+<p>And there you go. <code>this</code> references the object passed in argument to <code>.call()</code>. Cool right?</p>
+<p>This way you’re able to specify a context for a function. It’s super handy and what a lot of frameworks and bundlers use internally – check out your Webpack bundles!</p>
+<p>I won’t go over all the possible cases/uses of <code>this</code>, there’s quite a few and the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN doc</a> is really good.</p>
+<p>It’s important to remember <code>this</code> ?.</p> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>

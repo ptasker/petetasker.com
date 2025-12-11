@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>An introduction to Gatsby for WordPress Developers | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>An introduction to Gatsby for WordPress Developers</h1> <p class="date-row"> June 18, 2020 </p> </header> <p>For a long time, my personal website was a built on WordPress. I’ve worked with WordPress a bunch in my career and felt like it was a good balance of functionality and flexibility. But lately, I’ve thought about ditching it all and switching over to a static site. I personally love writing in Markdown, and the new WordPress editor relegated Markdown writing to a second class citizen. So I figured now was the time to switch over to something else entirely different, something like <a href="https://www.gatsbyjs.org/">Gatsby</a>.</p>
+<p>Gatsby is a static site generator, if you’re not familiar, that allows you write your templates in React and uses NodeJS under the hood to compile your site. I enjoyed building my new site: creating templates, configuring the GraphQL queries and getting back into traditional web development.</p>
+<p>At work, I’ve written about using WordPress as data source on <a href="https://spinupwp.com/gatsby-headless-wordpress/">the SpinupWP blog</a>, and I wanted to know what it would be like to switch from WordPress to a Markdown based blog.</p>
+<p>What follows are the steps I followed to migrate my site from a self-hosted WordPress site to a Gatsby site hosted on <a href="https://www.netlify.com/">Netlify</a>. It may not be the exact process that you will need to follow to migrate your own WordPress site, but I think it covers the most common steps.</p>
+<h2 id="extracting-content-from-wordpress">Extracting Content From WordPress</h2>
+<p>The first step to getting content out of WordPress was grabbing an XML export. This can be done using the WordPress core exporter. You can run create the export by logging into your wp-admin and going to Tools > Export.</p>
+<p>Once you have an export XML file you’ll need a markdown converter. There are few available online, I used the <a href="https://github.com/lonekorean/wordpress-export-to-markdown">wordpress-export-to-markdown</a> script, but there’s plugins and scripts like <a href="https://github.com/thomasf/exitwp">ExitWP</a> available online that do the same thing.</p>
+<p>It’s pretty straightforward to convert the XML export into Markdown. With the <code>wordpress-export-to-markdown</code> script it’s really just this one command:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#B392F0">npx</span><span style="color:#9ECBFF"> wordpress-export-to-markdown</span><span style="color:#79B8FF"> --save-attached-images</span><span style="color:#79B8FF"> true</span></span></code></pre>
+<p><img  src="/_astro/export-script.fxmSKOvB_ZQUTYL.webp" alt="export-script" loading="lazy" decoding="async" fetchpriority="auto" width="1828" height="1230"></p>
+<p>After the script ran, I had a folder with a bunch of new markdown files and a folder with my media uploads. I just dumped the markdown files into a ‘blog’ folder and all media into a ‘blog-post-images’ folder. You could group each post in a folder with it’s media, but I opted for this set up for the old posts to keep them separate.</p>
+<p><img  src="/_astro/raw-data.CgEUi_82_Z2oWbdx.webp" alt="'Folder of Markdown and images'" loading="lazy" decoding="async" fetchpriority="auto" width="2052" height="1158"></p>
+<p>The data in the Markdown files was a little mangled, but not too bad. The ‘frontmatter’ (the metadata for each post) was chucked in the header of the Markdown file, so a lot of the work formatting the files was removing this junk.</p>
+<p>For the most part, the posts came across ok. There was a bit of formatting and styling needed in terms of <code>&#x3C;code></code> and <code>&#x3C;pre></code> tags, as well as fixing up image paths. Other than than, most formatting was in pretty good shape!</p>
+<div style="width:100%;height:0;padding-bottom:60%;position:relative;"><iframe src="https://giphy.com/embed/3ohryhNgUwwZyxgktq" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen></iframe></div><p><a href="https://giphy.com/gifs/okcupid-3ohryhNgUwwZyxgktq">via GIPHY</a></p>
+<h2 id="getting-gatsby-up-and-running">Getting Gatsby up and running</h2>
+<p>Alright, so now we’ve got out WordPress content, now what? Welp, the first thing we have to do is get Gatsby up and running. Fortunately this is pretty easy and the <a href="https://www.gatsbyjs.org/docs/">Gatsby docs</a> are very helpful.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#B392F0">//</span><span style="color:#9ECBFF"> Install</span><span style="color:#9ECBFF"> the</span><span style="color:#9ECBFF"> gatsby</span><span style="color:#9ECBFF"> cli</span><span style="color:#9ECBFF"> tool</span><span style="color:#9ECBFF"> globally</span></span>
+<span class="line"><span style="color:#B392F0">npm</span><span style="color:#9ECBFF"> install</span><span style="color:#79B8FF"> -g</span><span style="color:#9ECBFF"> gatsby-cli</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">//</span><span style="color:#9ECBFF"> Create</span><span style="color:#9ECBFF"> a</span><span style="color:#9ECBFF"> new</span><span style="color:#9ECBFF"> Gatsby</span><span style="color:#9ECBFF"> site</span><span style="color:#9ECBFF"> in</span><span style="color:#9ECBFF"> a</span><span style="color:#9ECBFF"> 'gatsby-starter-blog'</span><span style="color:#9ECBFF"> folder</span></span>
+<span class="line"><span style="color:#B392F0">gatsby</span><span style="color:#9ECBFF"> new</span><span style="color:#9ECBFF"> gatsby-starter-blog</span><span style="color:#9ECBFF"> https://github.com/gatsbyjs/gatsby-starter-blog</span></span>
+<span class="line"></span></code></pre>
+<p>I opted to use the <a href="https://github.com/gatsbyjs/gatsby-starter-blog">Gatsby Starter Blog</a> <em>starter</em> as it already has a lot of the Markdown plugins included, as well as some pretty decent defaults and app structure.</p>
+<p>In Gatsby land, starters as pre-built boilerplates, and it’s really awesome how far they can get you right out of the box. There are a bunch of options for pretty much any design style you could ask for. Think of starters as a WordPress theme <em>and</em> set of plugins.</p>
+<p>Gatsby does have the <a href="https://www.gatsbyjs.org/docs/themes/what-are-gatsby-themes">concept of themes</a> as well, but for most smaller sites a starter is just fine. The only thing you lose by using a starter over a theme is that if the starter is updated down the road you’ll have no way to pull in any upstream changes.</p>
+<p>For me, that’s a solid “meh”.</p>
+<p>Once you’ve run <code>gatsby new</code>, you’ll have a pretty nice Gatsby app ready to go. If you <code>cd</code> into ‘gatsby-starter-blog’ and run <code>gatsby develop</code> you should see your new blog running at <a href="http://localhost:8000">http://localhost:8000</a>. And at this point, if you’ve moved your markdown files into the ‘content/blog’ folder, they should have been created as Gatsby posts.</p>
+<p>How’d that happen?</p>
+<h2 id="how-gatsby-works">How Gatsby Works</h2>
+<p>If you’re coming from WordPress land, the concept of a ‘compiled’ website might seem a little strange. That’s what Gatsby does, it compiles a dynamic site (React components and a content source) into a (mostly) static website. Because of this compilation step, most of the magic happens during the build step.</p>
+<p>Before we get into the build side of things, it’s helpful to see how the content and structure of the site is created.</p>
+<p>The first thing to learn about is the <a href="https://www.gatsbyjs.org/docs/gatsby-config/"><code>gatsby-config.js</code> file</a>. This is where we load in our Gatsby plugins and configuration. For our Markdown files, we use the <code>gatsby-source-filesystem</code> plugin to load them in, specifying the path in the configuration:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#B392F0">    resolve</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">`gatsby-source-filesystem`</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#B392F0">    options</span><span style="color:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#B392F0">    path</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">`${</span><span style="color:#E1E4E8">__dirname</span><span style="color:#9ECBFF">}/content/assets`</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#B392F0">    name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">`assets`</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#E1E4E8">},</span></span></code></pre>
+<p>The Gatsby starter will have this file mostly populated out of the gate, but it’s good to know it’s purpose and location.</p>
+<h2 id="gatsby-node-apis">Gatsby Node APIs</h2>
+<p>The next thing to learn about are the <a href="https://www.gatsbyjs.org/docs/node-apis/">Gatsby Node APIs</a>. These are managed by the <code>gatsby-node.js</code> file. Here, we define how pages get created and how they interface with the <a href="https://www.gatsbyjs.org/docs/graphql-concepts/">GraphQL</a> layer.</p>
+<p>The main function to create pages is the called, unironically, <a href="https://www.gatsbyjs.org/docs/node-apis/#createPages"><code>createPages()</code></a>. In here we define the query to get our posts, and any additional data we want to add to our posts/pages. We then call the <a href="https://www.gatsbyjs.org/docs/actions/#createPage"><code>createPage()</code></a> function for each ‘post’ we want created.</p>
+<p>It’s important to note that <code>gatsby-node.js</code> file is essentially just a node script with access to the Gatsby APIs. This is helpful information if you’re debugging during the build process, you can <a href="https://www.gatsbyjs.org/docs/debugging-the-build-process/">debug the Gatsby build site</a> just as you would any other Node script.</p>
+<p>In this file, we import a template to use when the <code>createPage()</code> function is called a bit later.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> blogPost</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> path.</span><span style="color:#B392F0">resolve</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">`./src/templates/blog-post.js`</span><span style="color:#E1E4E8">)</span></span></code></pre>
+<p>Then, we have our GraphQL query which is saved in the <code>postsResult</code> variable. We use the <code>graphql</code> function which is part of the Gatsby package;</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> postsResult</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> graphql</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#9ECBFF">    {</span></span>
+<span class="line"><span style="color:#9ECBFF">        allMarkdownRemark(</span></span>
+<span class="line"><span style="color:#9ECBFF">            sort: { fields: [frontmatter___date], order: DESC }</span></span>
+<span class="line"><span style="color:#9ECBFF">            limit: 1000</span></span>
+<span class="line"><span style="color:#9ECBFF">        ) {</span></span>
+<span class="line"><span style="color:#9ECBFF">        edges {</span></span>
+<span class="line"><span style="color:#9ECBFF">            node {</span></span>
+<span class="line"><span style="color:#9ECBFF">            fields {</span></span>
+<span class="line"><span style="color:#9ECBFF">                slug</span></span>
+<span class="line"><span style="color:#9ECBFF">            }</span></span>
+<span class="line"><span style="color:#9ECBFF">            frontmatter {</span></span>
+<span class="line"><span style="color:#9ECBFF">                title</span></span>
+<span class="line"><span style="color:#9ECBFF">                type</span></span>
+<span class="line"><span style="color:#9ECBFF">            }</span></span>
+<span class="line"><span style="color:#9ECBFF">            }</span></span>
+<span class="line"><span style="color:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#E1E4E8">)</span></span></code></pre>
+<p><code>allMarkdownRemark</code> is a function that’s part of the <a href="https://www.gatsbyjs.org/packages/gatsby-transformer-remark/"><code>gatsby-transformer-remark</code> plugin</a> and is Gatsby’s port of the <a href="https://remark.js.org/">Remark</a> markdown parser. In the <code>gatsby-config.js</code> file we’ve already configured this plugin so it knows where to find our Markdown files.</p>
+<p>Gatsby also has a <a href="https://www.gatsbyjs.org/docs/graphql-concepts/#understanding-the-parts-of-a-query">great overview</a> explaining what GraphQL is and why it’s so cool.</p>
+<p>All we need to know about the above query is that it gets all of our content from our markdown files, sorted by date and limited to 1000.</p>
+<p>The neat thing about GraphQL is that it returns data in the <em>same format</em> as we request it. So we can access data in the <code>postsResult</code> variable like we would any other JS object.</p>
+<p>So in our query we’re asking for:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">    allMarkdownRemark(</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">        sort</span><span style="color:#E1E4E8">: { </span><span style="color:#FDAEB7;font-style:italic">fields</span><span style="color:#E1E4E8">: [</span><span style="color:#FDAEB7;font-style:italic">frontmatter___date</span><span style="color:#E1E4E8">], </span><span style="color:#FDAEB7;font-style:italic">order</span><span style="color:#E1E4E8">: </span><span style="color:#FDAEB7;font-style:italic">DESC</span><span style="color:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">        limit:</span><span style="color:#79B8FF"> 1000</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">    )</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">        edges</span><span style="color:#FDAEB7;font-style:italic"> {</span></span>
+<span class="line"><span style="color:#FDAEB7;font-style:italic">            ...</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
+<p>And in the <code>postsResult</code> var:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#6A737D">// Create blog posts pages.</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> posts</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> postsResult.data.allMarkdownRemark.edges</span></span></code></pre>
+<p>You can think of GraphQL queries as similar to <a href="https://www.smashingmagazine.com/2013/01/using-wp_query-wordpress/">WordPress custom <code>WP_Query()</code> calls</a>. We specify what we want, and it returns the data.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="php"><code><span class="line"><span style="color:#F97583">&#x3C;?</span><span style="color:#79B8FF">php</span></span>
+<span class="line"><span style="color:#E1E4E8">   $args </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> array</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#9ECBFF">      'post_status'</span><span style="color:#F97583"> =></span><span style="color:#9ECBFF"> 'future'</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#9ECBFF">      'meta_query'</span><span style="color:#F97583"> =></span><span style="color:#79B8FF"> array</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#79B8FF">         array</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#9ECBFF">            'key'</span><span style="color:#F97583"> =></span><span style="color:#9ECBFF"> '_thumbnail_id'</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#9ECBFF">            'value'</span><span style="color:#F97583"> =></span><span style="color:#79B8FF"> ’</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#9ECBFF">            'compare'</span><span style="color:#F97583"> =></span><span style="color:#9ECBFF"> '!='</span></span>
+<span class="line"><span style="color:#E1E4E8">         )</span></span>
+<span class="line"><span style="color:#E1E4E8">      )</span></span>
+<span class="line"><span style="color:#E1E4E8">   );</span></span>
+<span class="line"><span style="color:#E1E4E8">   $slider_posts </span><span style="color:#F97583">=</span><span style="color:#F97583"> new</span><span style="color:#79B8FF"> WP_Query</span><span style="color:#E1E4E8">($args);</span></span>
+<span class="line"><span style="color:#F97583">?></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">&#x3C;?</span><span style="color:#79B8FF">php</span><span style="color:#F97583"> if</span><span style="color:#E1E4E8">($slider_posts</span><span style="color:#F97583">-></span><span style="color:#B392F0">have_posts</span><span style="color:#E1E4E8">()) </span><span style="color:#F97583">:</span><span style="color:#F97583"> ?></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF">div</span><span style="color:#F97583"> class=</span><span style="color:#9ECBFF">'slider'</span><span style="color:#F97583">></span></span>
+<span class="line"><span style="color:#F97583">   &#x3C;?</span><span style="color:#79B8FF">php</span><span style="color:#F97583"> while</span><span style="color:#E1E4E8">($slider_posts</span><span style="color:#F97583">-></span><span style="color:#B392F0">have_posts</span><span style="color:#E1E4E8">()) </span><span style="color:#F97583">:</span><span style="color:#E1E4E8"> $slider_posts</span><span style="color:#F97583">-></span><span style="color:#B392F0">the_post</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">?></span></span>
+<span class="line"><span style="color:#F97583">      &#x3C;</span><span style="color:#79B8FF">div</span><span style="color:#F97583"> class=</span><span style="color:#9ECBFF">'slide'</span><span style="color:#F97583">></span></span>
+<span class="line"><span style="color:#F97583">         &#x3C;?</span><span style="color:#79B8FF">php</span><span style="color:#B392F0"> the_post_thumbnail</span><span style="color:#E1E4E8">() </span><span style="color:#F97583">?></span></span>
+<span class="line"><span style="color:#F97583">      &#x3C;/</span><span style="color:#79B8FF">div</span><span style="color:#F97583">></span></span>
+<span class="line"><span style="color:#F97583">   &#x3C;?</span><span style="color:#79B8FF">php</span><span style="color:#F97583"> endwhile</span><span style="color:#F97583"> ?></span></span>
+<span class="line"><span style="color:#F97583">&#x3C;/</span><span style="color:#79B8FF">div</span><span style="color:#F97583">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">&#x3C;?</span><span style="color:#79B8FF">php</span><span style="color:#F97583"> endif</span><span style="color:#F97583"> ?></span></span>
+<span class="line"><span style="color:#F97583">?></span></span></code></pre>
+<p><em>Example of getting posts for a ‘slider’</em></p>
+<p>Just like in WordPress, the last thing to do is loop over all the posts and apply our HTML:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#F97583">  const</span><span style="color:#79B8FF"> posts</span><span style="color:#F97583"> =</span><span style="color:#E1E4E8"> postsResult.data.allMarkdownRemark.edges</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">  posts.</span><span style="color:#B392F0">forEach</span><span style="color:#E1E4E8">((</span><span style="color:#FFAB70">post</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">index</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> previous, next</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    const</span><span style="color:#E1E4E8"> { </span><span style="color:#79B8FF">node</span><span style="color:#E1E4E8"> } </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> post</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">    // Figure out links for previous and next post</span></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (node.frontmatter.type </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "post"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">      previous </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> index </span><span style="color:#F97583">===</span><span style="color:#E1E4E8"> posts.</span><span style="color:#79B8FF">length</span><span style="color:#F97583"> -</span><span style="color:#79B8FF"> 1</span><span style="color:#F97583"> ?</span><span style="color:#79B8FF"> null</span><span style="color:#F97583"> :</span><span style="color:#E1E4E8"> posts[index </span><span style="color:#F97583">+</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">].node</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (node.frontmatter.type </span><span style="color:#F97583">===</span><span style="color:#9ECBFF"> "post"</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">      next </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> index </span><span style="color:#F97583">===</span><span style="color:#79B8FF"> 0</span><span style="color:#F97583"> ?</span><span style="color:#79B8FF"> null</span><span style="color:#F97583"> :</span><span style="color:#E1E4E8"> posts[index </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">].node</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">    //Actually create the page</span></span>
+<span class="line"><span style="color:#B392F0">    createPage</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">      path: post.node.fields.slug, </span><span style="color:#6A737D">//Post 'slug'</span></span>
+<span class="line"><span style="color:#E1E4E8">      component: blogPost, </span><span style="color:#6A737D">// Template to render</span></span>
+<span class="line"><span style="color:#E1E4E8">      context: { </span><span style="color:#6A737D">//Context date for this post/page</span></span>
+<span class="line"><span style="color:#E1E4E8">        slug: post.node.fields.slug,</span></span>
+<span class="line"><span style="color:#E1E4E8">        previous,</span></span>
+<span class="line"><span style="color:#E1E4E8">        next,</span></span>
+<span class="line"><span style="color:#E1E4E8">      },</span></span>
+<span class="line"><span style="color:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#E1E4E8">  })</span></span></code></pre>
+<p>In a WordPress theme, you would probably just output some HTML inside the loop. In Gatsby, since this is during the build step, you need to explicitly call the <code>createPage()</code> function to create the page on our site.</p>
+<p>The <code>createPage()</code> function uses our React component (<code>blogPost.js</code>) as the template. Just like WordPress uses individual theme component files to output parts of our theme, the <code>createPage()</code> function grabs our template and injects the data needed to render out everything.</p>
+<p>The <a href="https://github.com/ptasker/petetasker.com/blob/master/src/templates/blog-post.js"><code>blogPost.js</code> template</a> isn’t super complex, it’s just a React component with dynamic data passed in.</p>
+<p>I’ll defer to the <a href="https://www.gatsbyjs.org/tutorial/part-seven/">Gatsby docs</a> for explaining how templates work.</p>
+<p>Things also differ from the traditional WordPress development workflow when it comes to images.</p>
+<h2 id="image-handling">Image Handling</h2>
+<p>We’ve seen so far that Gatsby uses GraphQL to query content for our posts, but how are images handled? Images in Gatsby require the <a href="https://www.gatsbyjs.org/packages/gatsby-image/"><code>gatsby-image</code></a> plugin.</p>
+<p><code>gatsby-image</code> is a pretty sweet little package. It will take your large images, resize them, strip metadata, lazy load them and use a ‘SVG blurred placeholder’ all in one.</p>
+<p>Yeah.</p>
+<p><a href="https://www.gatsbyjs.org/packages/gatsby-image/#install">Per the docs</a>, it’s basically just installing a couple npm packages and adding some base configuration to your <code>gatsby-config.js</code> file.</p>
+<p>Then, you have a few options for how to use the image in your template and your posts.</p>
+<p>For markdown, you just use the markdown syntax for images, and use a relative path to the image:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>![](../blog-post-images/screen-shot.png)</span></span></code></pre>
+<p>In a component, you can query for an image with a GraphQL like so:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="js"><code><span class="line"><span style="color:#E1E4E8">query BioQuery {</span></span>
+<span class="line"><span style="color:#B392F0">    avatar</span><span style="color:#E1E4E8">: </span><span style="color:#B392F0">file</span><span style="color:#E1E4E8">(absolutePath: { regex: </span><span style="color:#9ECBFF">"/profile-pic.png/"</span><span style="color:#E1E4E8"> }) {</span></span>
+<span class="line"><span style="color:#E1E4E8">        childImageSharp {</span></span>
+<span class="line"><span style="color:#B392F0">            fixed</span><span style="color:#E1E4E8">(width: </span><span style="color:#79B8FF">50</span><span style="color:#E1E4E8">, height: </span><span style="color:#79B8FF">50</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">                ...</span><span style="color:#E1E4E8">GatsbyImageSharpFixed</span></span>
+<span class="line"><span style="color:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#9ECBFF">`)</span></span></code></pre>
+<p>Then elsewhere, use the <code>gatsby-image</code> <code>Image</code> component to render it.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#E1E4E8">&#x3C;</span><span style="color:#79B8FF">Image</span></span>
+<span class="line"><span style="color:#B392F0">    fixed</span><span style="color:#F97583">=</span><span style="color:#E1E4E8">{data.avatar.childImageSharp.fixed}</span></span>
+<span class="line"><span style="color:#B392F0">    alt</span><span style="color:#F97583">=</span><span style="color:#E1E4E8">{author.name}</span></span>
+<span class="line"><span style="color:#B392F0">    imgStyle</span><span style="color:#F97583">=</span><span style="color:#E1E4E8">{{</span></span>
+<span class="line"><span style="color:#E1E4E8">        borderRadius: </span><span style="color:#9ECBFF">`50%`</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">    }}</span></span>
+<span class="line"><span style="color:#E1E4E8">/></span></span></code></pre>
+<p>It seems a lot more complicated than what you would need to do in a WordPress theme, but I find it only slightly more verbose than this:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="php"><code><span class="line"><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF">img</span><span style="color:#79B8FF"> src</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">"&#x3C;?php echo esc_url( get_theme_mod( 'banner-section-image', '' ) ); ?>"</span><span style="color:#79B8FF"> alt</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">"Alt text"</span><span style="color:#F97583"> ></span></span></code></pre>
+<p>I’d argue that the biggest improvement over WordPress is Gatsby’s image handling. Having the correct sizes created automatically and having them lazy-loaded is a game changer. It requires next to no effort and everything is super performant out of the box.</p>
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/KTHNWHfhKQD4c" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen></iframe></div><p><a href="https://giphy.com/gifs/win-success-winning-KTHNWHfhKQD4c">via GIPHY</a></p>
+<p>Ok, so let’s review:</p>
+<ol>
+<li>✅ We’ve exported our WordPress site content to Markdown</li>
+<li>✅ We’ve exported our media</li>
+<li>✅ We’ve created a new Gatsby site that loads our markdown files</li>
+<li>✅ We’re loading up our images in posts and our templates</li>
+</ol>
+<p>All that’s left is deployment and hosting!</p>
+<h2 id="deployment-and-hosting">Deployment and Hosting</h2>
+<p>One of the sticking points with WordPress is finding a decent host. Most managed hosts can get expensive fairly quickly, and shared hosting is a no-go if you want decent performance. You can self host on a virtual server as I did for years, but you have to keep the underlying OS up to date and patch things, modify the firewall etc. etc. etc. (plug: <a href="https://spinupwp.com/">SpinupWP from Delicious Brains</a> mitigates all of these issues 🤩).</p>
+<p>Does hosting Gatsby have the same issues? In a word, no.</p>
+<p>Because Gatsby compiles down to <em>essentially</em> a static HTML web site, you can host almost anywhere. There’s no dynamic content, so it’s pretty quick right out of the box. Even more, <a href="https://www.netlify.com/">Netlify</a> offers free hosting of Gatsby sites, including <a href="https://letsencrypt.org/">Let’s Encrypt SSL certificates</a> and custom domains. That’s where I’m hosting this site and it’s the bee’s knees.</p>
+<p>I’ve also set up git deployments, so pushing to master deploys the site.</p>
+<h2 id="where-wordpress-is-a-better-option">Where WordPress is a better option</h2>
+<p>Ok, so all this sounds pretty great doesn’t it? Well it is, and Gatsby <em>is</em> awesome, but it’s not without issues.</p>
+<p>Gatsby isn’t a CMS, so none of the CMS nice things are available. Want to handle a contact form? That’s an external service. Want comments on your blog post? That’s an external service. Want to sell stuff or have user sessions? That’s an external…</p>
+<p>You get the point.</p>
+<p>It’s a static site, so it’s a static site. There’s no dynamic aspect to the site, everything is built at compile time. That’s probably the biggest drawback of Gatsby, there’s no ‘dynamic’ functionality on your site by default.</p>
+<p>Of course, there are workarounds and services that will get you this interactivity, but it involves weaving together third party services, like Disqus for comments or Shopify for ecommerce.</p>
+<p>I’ve got Disqus comments enabled (leave a comment!) and use Netlify’s form handling for my contact form. But if you’ve got a highly dynamic site with dynamic content, Gatsby is probably a no-go.</p>
+<p>WordPress on the other hand is dynamic by default, so you can get pretty far with plugins and custom code.</p>
+<h2 id="in-the-end">In the end</h2>
+<p>For my own purposes, as a developer, Gatsby is a great solution. I can write in Markdown, deploy my site with <code>git push origin main</code> and write React code for my templates.</p>
+<p>One more time.</p>
+<div style="width:100%;height:0;padding-bottom:74%;position:relative;"><iframe src="https://giphy.com/embed/msKNSs8rmJ5m" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen></iframe></div><p><a href="https://giphy.com/gifs/day-subreddit-msKNSs8rmJ5m">via GIPHY</a></p>
+<p>What do you think about Gatsby over WordPress?</p>
+<p><em>You can check out the source for this site <a href="https://github.com/ptasker/petetasker.com">on Github</a></em></p> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>

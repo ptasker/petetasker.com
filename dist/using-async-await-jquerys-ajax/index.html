@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Using async await with jQuery&#39;s $.ajax | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>Using async await with jQuery&#39;s $.ajax</h1> <p class="date-row"> June 12, 2020 </p> </header> <p>If you’re like me, you’re probably stuck using jQuery more often than not. It’s everywhere, and to be honest it’s a solid, mature library. It’s also often already loaded on the page, especially if you’re working with WordPress.</p>
+<p>Outside of DOM manipulations (which you can now do <em>mostly</em> with native JS), jQuery’s <code>$.ajax()</code> method is really handy and works well.</p>
+<p>But did you know that this function provides <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise interface</a> out of the box? I recently remembered this and I thought to myself:</p>
+<blockquote>
+<p>Since async/await is just Promise’s under the hood, I wonder if I can use async/await with jQuery’s $.ajax().</p>
+</blockquote>
+<p>Turns out, you can!</p>
+<h2 id="how-to-use-asyncawait-with-jquery">How to use async/await with jQuery</h2>
+<p>Async/await is a <em>fairly</em> new feature. It was added in the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">ES2017 spec</a> 4 years ago or so and is now available natively in most modern, evergreen browsers. There’s no reason to not use it in your current JavaScript code.</p>
+<p>If you’d like to support older browsers (or old IE), you’ll need to use a <a href="https://stackoverflow.com/a/47506839/130596">transpiler</a> like <a href="https://babeljs.io/">Babel</a> to get it working in older browsers. Most of us are using Babel anyway with our bundlers like <a href="https://babeljs.io/docs/setup/#installation">Webpack</a>), so this isn’t a huge deal.</p>
+<h2 id="dont-call-me-maybe">Don’t call me, maybe</h2>
+<p>Back in the day you had to invoke jQuery’s <code>$.ajax()</code> function like the following:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"></span>
+<span class="line"><span style="color:#6A737D">//Function wrapper that confuses alot of devs because async code works differently that synchronous code</span></span>
+<span class="line"><span style="color:#F97583">function</span><span style="color:#B392F0"> doAjax</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">    $.</span><span style="color:#B392F0">ajax</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">        url: ajaxurl,</span></span>
+<span class="line"><span style="color:#E1E4E8">        type: </span><span style="color:#9ECBFF">'POST'</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">        data: {</span></span>
+<span class="line"><span style="color:#E1E4E8">            stuff: </span><span style="color:#9ECBFF">"here"</span></span>
+<span class="line"><span style="color:#E1E4E8">        },</span></span>
+<span class="line"><span style="color:#B392F0">        success</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">function</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">data</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D">            //wacky nested anonymous callbacks go here</span></span>
+<span class="line"><span style="color:#F97583">            var</span><span style="color:#E1E4E8"> something_but_not_really </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> data;</span></span>
+<span class="line"><span style="color:#E1E4E8">        },</span></span>
+<span class="line"><span style="color:#B392F0">        error</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">function</span><span style="color:#E1E4E8"> (</span><span style="color:#FFAB70">jqXHR</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">textStatus</span><span style="color:#E1E4E8">, </span><span style="color:#FFAB70">errorThrown</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#6A737D">            // Empty most of the time...</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#E1E4E8">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#E1E4E8"> something_but_not_really</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre>
+<p>When I was a junior dev I had no idea why <code>something_but_not_really</code> evaluated to <code>undefined</code>. I had to re-learn <a href="https://developer.mozilla.org/en-US/docs/Glossary/Callback_function">callbacks</a> more than a few times. The hardest part for me was understanding the difference between <em>asynchronous</em> code and <em>synchronous</em> code.</p>
+<p>This <a href="https://stackoverflow.com/a/26804844/130596">Stack Overflow answer</a> summarizes the concept really well:</p>
+<blockquote>
+<p>SYNCHRONOUS</p>
+<p>You are in a queue to get a movie ticket. You cannot get one until everybody in front of you gets one, and the same applies to the people queued behind you.</p>
+<p>ASYNCHRONOUS</p>
+<p>You are in a restaurant with many other people. You order your food. Other people can also order their food, they don’t have to wait for your food to be cooked and served to you before they can order. In the kitchen restaurant workers are continuously cooking, serving, and taking orders. People will get their food served as soon as it is cooked.</p>
+</blockquote>
+<p>If we take the earlier example and update it to use <code>async/await</code> syntax:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"></span>
+<span class="line"><span style="color:#F97583">async</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> doAjax</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">args</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    const</span><span style="color:#79B8FF"> result</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> $.</span><span style="color:#B392F0">ajax</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">        url: ajaxurl,</span></span>
+<span class="line"><span style="color:#E1E4E8">        type: </span><span style="color:#9ECBFF">'POST'</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">        data: args</span></span>
+<span class="line"><span style="color:#E1E4E8">    });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#E1E4E8"> result;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And the <code>result</code> variable <em>actually</em> returns the AJAX result. Cool right?</p>
+<p>The big benefit of async/await is that it makes asynchronous code <em>appear</em> synchronous. As in, do this thing, wait for it to finish and then give me the result.</p>
+<h2 id="errors">Errors</h2>
+<p>Notice anything missing in our new function? Yep, error handling is non-existent. Fortunately, since async/await is essentially synchronous, you can use <code>try...catch()</code>!!!</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"></span>
+<span class="line"><span style="color:#F97583">async</span><span style="color:#F97583"> function</span><span style="color:#B392F0"> doAjax</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">args</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> result;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    try</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">        result </span><span style="color:#F97583">=</span><span style="color:#F97583"> await</span><span style="color:#E1E4E8"> $.</span><span style="color:#B392F0">ajax</span><span style="color:#E1E4E8">({</span></span>
+<span class="line"><span style="color:#E1E4E8">            url: ajaxurl,</span></span>
+<span class="line"><span style="color:#E1E4E8">            type: </span><span style="color:#9ECBFF">'POST'</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">            data: args</span></span>
+<span class="line"><span style="color:#E1E4E8">        });</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">        return</span><span style="color:#E1E4E8"> result;</span></span>
+<span class="line"><span style="color:#E1E4E8">    } </span><span style="color:#F97583">catch</span><span style="color:#E1E4E8"> (error) {</span></span>
+<span class="line"><span style="color:#E1E4E8">        console.</span><span style="color:#B392F0">error</span><span style="color:#E1E4E8">(error);</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>And there you have it. Some error catching built in. Now, there’s other ways to handle errors with async/await, but they’re a <a href="http://blog.grossman.io/how-to-write-async-await-without-try-catch-blocks-in-javascript/">little more complex</a>.</p>
+<p>The other thing to keep in mind now, since we’re returning the result of an awaited function, <code>result</code> will equal a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise instance</a>. You have 2 options with what you can do with the result.</p>
+<p>The first option is to make sure that you use await when calling <code>doAjax()</code> later on.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#6A737D">// Elsewhere in code, inside an async function</span></span>
+<span class="line"><span style="color:#F97583">const</span><span style="color:#79B8FF"> stuff</span><span style="color:#F97583"> =</span><span style="color:#F97583"> await</span><span style="color:#B392F0"> doAjax</span><span style="color:#E1E4E8">();</span></span></code></pre>
+<p>The other option is to use the <code>Promise</code> interface and roll that way:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#B392F0">doAjax</span><span style="color:#E1E4E8">().</span><span style="color:#B392F0">then</span><span style="color:#E1E4E8">( (</span><span style="color:#FFAB70">data</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">=></span><span style="color:#B392F0"> doStuff</span><span style="color:#E1E4E8">(data) )</span></span></code></pre>
+<p>Promises aren’t all that bad, and can look cleaner or be easier to work with, depending. I’ve found that using ES2015 classes it’s sometimes easier to use the Promise interface, so YMMV.</p>
+<p>But that’s it – go get your <code>$.ajax()</code> using async/await today!</p> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>

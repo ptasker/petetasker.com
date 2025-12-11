@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nginx, Let&#39;s Encrypt and taking my own server down? | 🔥 Database Critical 🔥</title><meta name="description" content="Peter Tasker is a software developer located in Ottawa Ontario, Canada."><link rel="stylesheet" href="/_astro/_slug_.D_TV8Ibz.css"></head> <body> <div class="wrapper"> <header class="site-head"> <div class="site-mast container"> <div class="site-mast-left"> <h1 class="site-banner-title"> <a href="/">🔥 Database Critical 🔥</a> </h1> </div> <div class="site-mast-right"> <a class="site-nav-item" href="https://www.linkedin.com/in/petertasker" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/linkedin.COXC03GI.svg" alt="LinkedIn"> </a> <a href="https://twitter.com/petetasker" class="site-nav-item" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/twitter.Cd1IKmxq.svg" alt="Twitter"> </a> <a class="site-nav-item" href="https://feedly.com/i/subscription/feed/https://petetasker.com/rss/" target="_blank" rel="noopener noreferrer"> <img class="site-nav-icon" src="/_astro/rss.BJRyKUDL.svg" alt="RSS Feed"> </a> </div> </div>  <div class="container"> <nav class="site-nav"> <div class="site-nav-right"> <a class="site-nav-button" href="/about"> <span class="label">About</span> </a> <a class="site-nav-button" href="/contact"> <span class="label">Contact</span> </a> <a class="site-nav-button" href="/uses"> <span class="label">Uses</span> </a> </div> </nav> </div> </header> <div class="bg-white-wrap"> <main class="container">  <article> <header> <h1>Nginx, Let&#39;s Encrypt and taking my own server down?</h1> <p class="date-row"> April 10, 2018 </p> </header> <p>If you pay attention to <a href="https://fourdots.com/blog/why-you-need-ssl-to-rank-better-in-2016-and-how-to-set-it-2169">Google and it’s indexing rules</a>, you’ve probably heard that you need an SSL certificate on your site. I’ve known this for a while and my personal site at petetasker.com wasn’t a high priority situation.</p>
+<p>Welp, I was bored one night and decided it was about time to get one of those fancy-pants free <a href="https://letsencrypt.org/">Let’s Encrypt</a> cert’s installed on my old Linode server.</p>
+<p>There are tons of resources on the internet that outline how to get an SSL certificate installed on your site, so I’m not going to go over that portion. What I will go over is how blindly following them can take down your server…</p>
+<p>You see, most tutorials want you to use <a href="https://certbot.eff.org/">Certbot</a> to install your certificate and configure Nginx.</p>
+<p><code>certbot --nginx -d petetasker.com</code></p>
+<p>Seems harmless enough, no? That little <code>--nginx</code> flag, if you didn’t read the fine print, will modify your virtual host config. Yeah. There’s an option when setting up the certificate to redirect all HTTP traffic to HTTPS, and obviously I said ‘sure’.</p>
+<p>And queue the redirect loop. Site monitor email deluge, Twitter ‘the site is DOWN’ DM’s…</p>
+<p><img  src="/_astro/Monosnap-2018-04-09-20-27-44.BxLhquYG_JzoOe.webp" alt loading="lazy" decoding="async" fetchpriority="auto" width="1588" height="1246"></p>
+<p>Everything is going swimmingly!</p>
+<p>I managed to solve this issue by removing the following block in the <code>/etc/nginx/sites-available/petetasker.com</code> virtual host declaration:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> ($host = petetasker.com) {</span></span>
+<span class="line"><span style="color:#F97583">       return</span><span style="color:#79B8FF"> 301</span><span style="color:#9ECBFF"> https://</span><span style="color:#E1E4E8">$host$request_uri;</span></span>
+<span class="line"><span style="color:#E1E4E8">    } </span><span style="color:#6A737D"># managed by Certbot</span></span></code></pre>
+<p>And adding a simpler redirect block, just to be <em>reallllly</em> clear, at the top of the file:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#B392F0">server</span><span style="color:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#B392F0">    listen</span><span style="color:#79B8FF"> 80</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">    server_name</span><span style="color:#9ECBFF"> petetasker.com</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#79B8FF"> 301</span><span style="color:#9ECBFF"> https://</span><span style="color:#E1E4E8">$server_name$request_uri;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>So what’s the lesson here kids? The lesson is that if you’re using a tool that will ‘automagically’ do something for you, and it sounds too good to be true, it probably is.</p>
+<p>If you’re wondering what the final virtual host block looks like:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#B392F0">server</span><span style="color:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#B392F0">        listen</span><span style="color:#79B8FF"> 80</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">        server_name</span><span style="color:#9ECBFF"> petetasker.com</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">        return</span><span style="color:#79B8FF"> 301</span><span style="color:#9ECBFF"> https://</span><span style="color:#E1E4E8">$server_name$request_uri;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">server</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">        listen</span><span style="color:#79B8FF"> 80</span><span style="color:#9ECBFF"> default_server</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#6A737D">        #listen [::]:80 default_server ipv6only=on;</span></span>
+<span class="line"><span style="color:#B392F0">        server_name</span><span style="color:#9ECBFF">  petetasker.com</span><span style="color:#9ECBFF"> www.petetasker.com</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">        server_name</span><span style="color:#9ECBFF">  petetasker.com</span><span style="color:#9ECBFF"> www.petetasker.com</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">        root</span><span style="color:#9ECBFF"> /usr/share/nginx/sites/petetasker.com</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">        index</span><span style="color:#9ECBFF"> index.php</span><span style="color:#9ECBFF"> index.html</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">        location</span><span style="color:#9ECBFF"> /</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#B392F0">                try_files</span><span style="color:#E1E4E8"> $uri $uri</span><span style="color:#9ECBFF">/</span><span style="color:#9ECBFF"> /index.php?</span><span style="color:#E1E4E8">$args;</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">        location</span><span style="color:#9ECBFF"> ~</span><span style="color:#79B8FF"> \.</span><span style="color:#9ECBFF">php</span><span style="color:#E1E4E8">$ </span><span style="color:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#B392F0">                try_files</span><span style="color:#E1E4E8"> $uri </span><span style="color:#9ECBFF">=</span><span style="color:#79B8FF">404</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">                fastcgi_pass</span><span style="color:#9ECBFF"> unix:/var/run/php/php7.0-fpm.sock</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">                fastcgi_index</span><span style="color:#9ECBFF"> index.php</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">                fastcgi_param</span><span style="color:#9ECBFF"> SCRIPT_FILENAME</span><span style="color:#E1E4E8"> $document_root$fastcgi_script_name;</span></span>
+<span class="line"><span style="color:#B392F0">                include</span><span style="color:#9ECBFF"> fastcgi_params</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    listen</span><span style="color:#E1E4E8"> [::]:443 ssl ipv6only</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">on</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#B392F0">    listen</span><span style="color:#79B8FF"> 443</span><span style="color:#9ECBFF"> ssl</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#B392F0">    ssl_certificate</span><span style="color:#9ECBFF"> /etc/letsencrypt/live/petetasker.com-0001/fullchain.pem</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#B392F0">    ssl_certificate_key</span><span style="color:#9ECBFF"> /etc/letsencrypt/live/petetasker.com-0001/privkey.pem</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#B392F0">    include</span><span style="color:#9ECBFF"> /etc/letsencrypt/options-ssl-nginx.conf</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#B392F0">    ssl_dhparam</span><span style="color:#9ECBFF"> /etc/letsencrypt/ssl-dhparams.pem</span><span style="color:#E1E4E8">; </span><span style="color:#6A737D"># managed by Certbot</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span></code></pre> <hr> </article>  </main> </div> <footer> <div class="container"> <hr> <p> <span class="muted"> <a href="https://thenounproject.com/search/?q=ecto-1&i=1367798">
+Ecto-1
+</a>
+icon by Patengerie from the  <a href="http://thenounproject.com/">Noun Project</a> </span>
+© 2025, Built with
+  <a href="https://astro.build">Astro</a> </p> </div> </footer> </div> </body></html>
