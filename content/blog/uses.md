@@ -12,15 +12,12 @@ _yoast_wpseo_content_score:
 ---
 ### Software
 
-- IDE – PHPStorm
 - Editor – VS Code
 - Terminal – iTerm2 (oh-my-zsh)
-- Sequel Pro for database shenanigans
 
 ### Hardware
 
-- 16″ 2019 Macbook Pro – 2.4 GHz 8-Core Intel Core i9, 32GB RAM
-- [Das Keyboard Professional 4 – For Mac ](https://www.daskeyboard.com/daskeyboard-4-professional-for-mac/)
-- MX Master 3 mouse
-- LG UltraFine 4k 21″ Monitor
-- Dell P2715Q Display 27″ 4k display
+- 16″ 2021 Macbook Pro – M1, 64GB RAM
+- [Dygma Raise v1 keyboard](https://dygma.com/)
+- MX Master 3S mouse
+- 2 x [Dell UltraSharp 32 4K Thunderbolt Hub Monitor - U3225QE](https://www.dell.com/en-ca/shop/dell-ultrasharp-32-4k-thunderbolt-hub-monitor-u3225qe/apd/210-bqhs/monitors-monitor-accessories)
