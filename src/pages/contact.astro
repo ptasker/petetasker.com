@@ -1,38 +1,75 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import ProgrammerLayout from "../layouts/ProgrammerLayout.astro";
 
 const siteTitle = "Contact";
 ---
 
-<Layout title={siteTitle} description="Contact Pete">
-  <div>
-    <h2>Contact</h2>
-    <p>Contact: me@&lt;thisdomain&gt;</p>
+<ProgrammerLayout title={siteTitle} description="Contact Pete">
+  <div class="max-w-2xl mx-auto">
+    <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-8 border-b border-slate-200 dark:border-slate-700 pb-2">Contact</h2>
+    <p class="text-slate-600 dark:text-slate-400 mb-6">Contact: me@&lt;thisdomain&gt;</p>
+
     <form
-      method="post"
-      netlify-honeypot="bot-field"
-      data-netlify="true"
       name="contact"
+      method="POST"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      class="space-y-6"
     >
-      <input type="hidden" name="bot-field" />
       <input type="hidden" name="form-name" value="contact" />
-      <label>
-        <span>Name</span>
-        <input type="text" name="name" id="name" />
-      </label>
-      <label>
-        <span>Email</span>
-        <input type="email" name="email" id="email" />
-      </label>
-      <label>
-        <span>Subject</span>
-        <input type="text" name="subject" id="subject" />
-      </label>
-      <label>
-        <span>Message</span>
-        <textarea name="message" id="message" rows="5" />
-      </label>
-      <input type="submit" value="Send" />
+      <input type="hidden" name="bot-field" />
+      <div class="grid grid-cols-1 gap-2">
+        <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
+        <input
+            type="text"
+            name="name"
+            id="name"
+            required
+            class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-2">
+        <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+        <input
+            type="email"
+            name="email"
+            id="email"
+            required
+            class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-2">
+        <label for="subject" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Subject</label>
+        <input
+            type="text"
+            name="subject"
+            id="subject"
+            required
+            class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-2">
+        <label for="message" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Message</label>
+        <textarea
+            name="message"
+            id="message"
+            rows="5"
+            required
+            class="mt-1 block w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+        ></textarea>
+      </div>
+
+      <div>
+        <button
+            type="submit"
+            class="inline-flex justify-center rounded-md border border-transparent bg-green-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer dark:ring-offset-slate-900 transition-colors"
+        >
+          Send
+        </button>
+      </div>
     </form>
   </div>
-</Layout>
+</ProgrammerLayout>

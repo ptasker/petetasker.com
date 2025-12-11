@@ -38,8 +38,7 @@ If you'd like to support older browsers (or old IE), you'll need to use a [trans
 
 Back in the day you had to invoke jQuery's `$.ajax()` function like the following:
 
-```javascript{numberLines: true}
-
+```javascript
 //Function wrapper that confuses alot of devs because async code works differently that synchronous code
 function doAjax() {
     $.ajax({
@@ -77,8 +76,7 @@ This [Stack Overflow answer](https://stackoverflow.com/a/26804844/130596) summar
 
 If we take the earlier example and update it to use `async/await` syntax: 
 
-```javascript{numberLines: true}
-
+```javascript
 async function doAjax(args) {
     const result = await $.ajax({
         url: ajaxurl,
@@ -100,8 +98,7 @@ Errors
 
 Notice anything missing in our new function? Yep, error handling is non-existent. Fortunately, since async/await is essentially synchronous, you can use `try...catch()`!!!
 
-```javascript{numberLines: true}
-
+```javascript
 async function doAjax(args) {
     let result;
 

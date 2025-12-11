@@ -1,0 +1,57 @@
+---
+import ProgrammerLayout from '../../layouts/ProgrammerLayout.astro';
+
+// Get all blog posts
+const postModules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
+
+// Extract all tags with post counts
+const tagMap = new Map<string, number>();
+
+Object.values(postModules).forEach((module: any) => {
+  const tags = module.frontmatter.tag || [];
+  const categories = module.frontmatter.category || [];
+  const allTags = [...new Set([...categories, ...tags])].filter(Boolean);
+  
+  allTags.forEach((tag: string) => {
+    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+  });
+});
+
+// Sort tags alphabetically
+const sortedTags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<ProgrammerLayout title="Tags" description="Browse posts by tag">
+  <div class="max-w-4xl mx-auto">
+    <header class="mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+        Tags
+      </h1>
+      <p class="text-lg text-slate-600 dark:text-slate-400">
+        Browse all posts by tag
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {sortedTags.map(([tag, count]) => (
+        <a 
+          href={`/tags/${tag.toLowerCase().replace(/\s+/g, '-')}`}
+          class="group p-6 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-green-500 dark:hover:border-green-400 transition-all hover:shadow-lg"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span class="text-sm font-mono text-slate-500 dark:text-slate-400">
+              {count} {count === 1 ? 'post' : 'posts'}
+            </span>
+          </div>
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+            {tag}
+          </h2>
+        </a>
+      ))}
+    </div>
+  </div>
+</ProgrammerLayout>

@@ -169,11 +169,11 @@ declare module 'astro:content' {
 	>;
 
 	type ContentEntryMap = {
-
+		
 	};
 
 	type DataEntryMap = {
-
+		
 	};
 
 	type AnyEntryMap = ContentEntryMap & DataEntryMap;

@@ -1,0 +1,192 @@
+---
+// Ecto-1 Car Animation Component
+---
+
+<!-- Ecto-1 Driving Lane -->
+<div class="ecto-lane relative">
+    <div class="ecto-wrapper absolute" style="width: 200px;">
+        <!-- Emergency lights -->
+        <div class="lights-container absolute inset-0 pointer-events-none">
+            <div class="light light-front-1"></div>
+            <div class="light light-front-2"></div>
+            <div class="light light-back-1"></div>
+            <div class="light light-back-2"></div>
+        </div>
+        <!-- Smoke clouds behind the car -->
+        <div class="smoke-container absolute inset-0 pointer-events-none">
+            <!-- Back tire smoke -->
+            <div class="smoke smoke-1"></div>
+            <div class="smoke smoke-2"></div>
+            <div class="smoke smoke-3"></div>
+            <!-- Front tire smoke -->
+            <div class="smoke smoke-4"></div>
+            <div class="smoke smoke-5"></div>
+            <div class="smoke smoke-6"></div>
+        </div>
+        <img src="/assets/ecto.svg" alt="Ecto-1 Car" class="ecto-car w-full h-auto opacity-40 dark:invert relative z-10" />
+    </div>
+</div>
+
+<style>
+    /* Ecto-1 driving lane */
+    .ecto-lane {
+        height: 120px;
+        position: relative;
+        overflow: hidden;
+        /* border-bottom: 2px solid rgba(0, 0, 0, 0.1); */
+    }
+    
+    /* Emergency lights on top of car */
+    .lights-container {
+        z-index: 20;
+    }
+    
+    .light {
+        position: absolute;
+        top: 22%;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(65, 105, 225, 0.6);
+        box-shadow: 0 0 15px rgba(65, 105, 225, 0.8), 0 0 30px rgba(65, 105, 225, 0.4);
+        opacity: 0;
+        animation: flash 0.8s infinite;
+    }
+    
+    .light-front-1 {
+        left: 34%;
+        animation-delay: 0s;
+        background: rgba(31, 3, 245, 0.381);
+
+    }
+    
+    .light-front-2 {
+        left: 40%;
+        animation-delay: 0.4s;
+    }
+    .light-back-1 {
+        left: 78%;
+        animation-delay: 0.2s;
+    }
+
+    .light-back-2 {
+        left: 83%;
+        background: rgba(31, 3, 245, 0.381);
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes flash {
+        0%, 100% {
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+    
+    /* html.dark .ecto-lane {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    } */
+    
+    /* Sliding animation wrapper */
+    .ecto-wrapper {
+        position: absolute;
+        top: 65%;
+        transform: translateY(-50%);
+        animation: slide-across 10s linear infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes slide-across {
+        0% {
+            left: 100%;
+        }
+        100% {
+            left: -256px;
+        }
+    }
+    
+    /* Rattling/shaking animation for the car */
+    .ecto-car {
+        animation: rattle 0.15s infinite;
+    }
+    
+    @keyframes rattle {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+        50% { transform: translate(1px, -1px) rotate(0.5deg); }
+        75% { transform: translate(-1px, -1px) rotate(-0.3deg); }
+    }
+    
+    /* Smoke puffs animation */
+    .smoke-container {
+        overflow: visible;
+    }
+    
+    .smoke {
+        position: absolute;
+        bottom: 25%;
+        width: 8px;
+        height: 8px;
+        background: rgba(100, 100, 100, 0.8);
+        border-radius: 50%;
+        opacity: 0;
+        animation: smoke-puff 1.2s infinite ease-out;
+        image-rendering: pixelated;
+    }
+    
+    html.dark .smoke {
+        background: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Back tire smoke */
+    .smoke-1, .smoke-2, .smoke-3 {
+        left: 18%;
+        top: 90%
+    }
+    
+    .smoke-1 {
+        animation-delay: 0s;
+    }
+    
+    .smoke-2 {
+        animation-delay: 0.4s;
+    }
+    
+    .smoke-3 {
+        animation-delay: 0.8s;
+    }
+    
+    /* Front tire smoke */
+    .smoke-4, .smoke-5, .smoke-6 {
+        left: 80%;
+        top: 90%
+    }
+    
+    .smoke-4 {
+        animation-delay: 0.2s;
+    }
+    
+    .smoke-5 {
+        animation-delay: 0.6s;
+    }
+    
+    .smoke-6 {
+        animation-delay: 1s;
+    }
+    
+    @keyframes smoke-puff {
+        0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.9;
+        }
+        50% {
+            transform: translate(15px, -8px) scale(0.8);
+            opacity: 0.6;
+        }
+        100% {
+            transform: translate(30px, -15px) scale(0.5);
+            opacity: 0;
+        }
+    }
+</style>
