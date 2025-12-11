@@ -14,13 +14,20 @@ interface Props {
 const { title, description, isHome = false } = Astro.props;
 
 const assets = {
-  twitter: "/assets/twitter.svg",
+  x: "/assets/x.svg",
+  bluesky: "/assets/bluesky.svg",
+  github: "/assets/github.svg",
   rss: "/assets/rss.svg",
   linkedIn: "/assets/linkedin.svg",
 };
 
-const twitterUrl = social.twitter
-  ? `https://twitter.com/${social.twitter.replace(/^@/, ``)}`
+const xUrl = social.twitter
+  ? `https://x.com/${social.twitter.replace(/^@/, ``)}`
+  : null;
+
+const blueskyUrl = social.bluesky || null;
+const githubUrl = social.github
+  ? `https://github.com/${social.github}`
   : null;
 
 // Ensure dark mode persistence
@@ -51,7 +58,7 @@ const script = `
 
         <!-- Header -->
 		<header class="border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <!-- Logo / Title -->
                     <div class="flex-shrink-0 flex items-center">
@@ -67,26 +74,9 @@ const script = `
                         <a href="/uses" class="text-slate-600 dark:text-slate-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Uses</a>
                     </nav>
 
-                    <!-- Right Side: Social & Toggle -->
-                    <div class="flex items-center space-x-4">
-                        <div class="hidden sm:flex items-center space-x-4 border-r border-slate-300 dark:border-slate-700 pr-4">
-                             <a href="#" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                <img src={assets.linkedIn} alt="LinkedIn" class="w-5 h-5 brightness-0 dark:brightness-100" />
-                             </a>
-                             {social.twitter && (
-                                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                    <img src={assets.twitter} alt="Twitter" class="w-5 h-5 brightness-0 dark:brightness-100" />
-                                </a>
-                             )}
-                             <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="opacity-60 hover:opacity-100 transition-opacity">
-                                <img src={assets.rss} alt="RSS" class="w-5 h-5 brightness-0 dark:brightness-100" />
-                             </a>
-                        </div>
+                    <!-- Right Side: Theme Toggle -->
+                    <div class="flex items-center">
                         <ThemeToggle />
-                        <!-- Mobile menu button (simple implementation, can be expanded) -->
-                         <div class="md:hidden flex items-center">
-                            <!-- Mobile menu trigger could go here -->
-                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +96,7 @@ const script = `
         )}
 
         <!-- Main Content -->
-		<main class="flex-grow w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+		<main class="flex-grow w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 			<slot />
 		</main>
 
@@ -114,8 +104,33 @@ const script = `
         <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 relative overflow-hidden">
             <Ecto1 />
             
-            <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-6">
+                    <!-- Social Icons -->
+                    <div class="flex items-center space-x-4">
+                        <a href="https://www.linkedin.com/in/petertasker/" target="_blank" rel="noopener noreferrer" class="opacity-40 hover:opacity-70 transition-opacity">
+                            <img src={assets.linkedIn} alt="LinkedIn" class="w-5 h-5 brightness-0 dark:brightness-100" />
+                        </a>
+                        {xUrl && (
+                            <a href={xUrl} target="_blank" rel="noopener noreferrer" class="opacity-40 hover:opacity-70 transition-opacity">
+                                <img src={assets.x} alt="X" class="w-5 h-5 brightness-0 dark:brightness-100" />
+                            </a>
+                        )}
+                        {blueskyUrl && (
+                            <a href={blueskyUrl} target="_blank" rel="noopener noreferrer" class="opacity-40 hover:opacity-70 transition-opacity">
+                                <img src={assets.bluesky} alt="Bluesky" class="w-5 h-5 brightness-0 dark:brightness-100" />
+                            </a>
+                        )}
+                        {githubUrl && (
+                            <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="opacity-40 hover:opacity-70 transition-opacity">
+                                <img src={assets.github} alt="GitHub" class="w-5 h-5 brightness-0 dark:brightness-100" />
+                            </a>
+                        )}
+                        <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="opacity-40 hover:opacity-70 transition-opacity">
+                            <img src={assets.rss} alt="RSS" class="w-5 h-5 brightness-0 dark:brightness-100" />
+                        </a>
+                    </div>
+                    
                     <div class="flex flex-col items-center text-center">
                         <p class="text-slate-500 dark:text-slate-400 text-sm mb-2">
                             © {new Date().getFullYear()} {siteTitle}. Built with <a href="https://astro.build" class="text-green-600 dark:text-green-400 hover:underline">Astro</a>.

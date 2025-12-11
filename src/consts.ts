@@ -7,4 +7,6 @@ export const description = "Peter Tasker is a software developer located in Otta
 export const siteUrl = "https://petetasker.com";
 export const social = {
     twitter: "petetasker",
+    bluesky: "https://bsky.app/profile/ptasker.bsky.social",
+    github: "ptasker",
 };
