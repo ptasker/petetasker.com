@@ -25,6 +25,58 @@ const getLink = (post: any) => {
 ---
 
 <ProgrammerLayout title="Home" isHome={true}>
+  <!-- Latest Post Feature -->
+  {sortedPosts.length > 0 && (() => {
+    const latestPost = sortedPosts[0];
+    const link = getLink(latestPost);
+    const title = latestPost.frontmatter.title || getLink(latestPost);
+    const date = new Date(latestPost.frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const rawContent = latestPost.rawContent ? latestPost.rawContent() : '';
+    const words = rawContent.split(/\s+/).length;
+    const readTime = Math.ceil(words / 200);
+    // Strip markdown headers and get plain text for excerpt
+    const plainText = rawContent.replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+    const excerpt = latestPost.frontmatter.excerpt || plainText.substring(0, 300).trim() + '...';
+    
+    return (
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 border-l-4 border-green-500 pl-4 mb-6">
+          Latest Post
+        </h2>
+        <article class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 rounded-lg shadow-md border-2 border-green-200 dark:border-green-700 p-8 hover:shadow-lg transition-shadow">
+          <header class="mb-4">
+            <div class="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 font-mono mb-3">
+              <span class="text-green-600 dark:text-green-400 font-semibold">{date}</span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                {readTime} min read
+              </span>
+            </div>
+            <h3 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+              <a href={link} class="hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                {title}
+              </a>
+            </h3>
+          </header>
+          <p class="text-slate-700 dark:text-slate-300 text-base leading-relaxed mb-6">
+            {excerpt}
+          </p>
+          <a href={link} class="inline-flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold hover:gap-3 transition-all">
+            Read full post
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </article>
+      </div>
+    );
+  })()}
+
   <div class="mb-8">
     <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-100 border-l-4 border-green-500 pl-4 mb-2">
       From the Blog
