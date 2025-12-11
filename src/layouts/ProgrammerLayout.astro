@@ -51,6 +51,16 @@ const script = `
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+		
+		<!-- Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-53518819"></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-53518819');
+		</script>
+		
 		<title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
         <script is:inline set:html={script}></script>
 	</head>
