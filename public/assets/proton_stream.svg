@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1400" height="400" viewBox="0 0 1400 400">
+  <defs>
+    <!-- Core glow -->
+    <filter id="coreGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Outer electric glow -->
+    <filter id="outerGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Gradient for core (orange/yellow) -->
+    <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffdba5"/>
+      <stop offset="30%" stop-color="#ff9b2b"/>
+      <stop offset="70%" stop-color="#ff5b00"/>
+      <stop offset="100%" stop-color="#ffe7b8"/>
+    </linearGradient>
+
+    <!-- Gradient for blue electric edge -->
+    <linearGradient id="edgeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9fd4ff"/>
+      <stop offset="40%" stop-color="#4cb4ff"/>
+      <stop offset="70%" stop-color="#0074ff"/>
+      <stop offset="100%" stop-color="#d3f0ff"/>
+    </linearGradient>
+
+    <!-- Spark glow -->
+    <radialGradient id="sparkGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#fffbe6" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer jittery blue edges -->
+  <g filter="url(#outerGlow)" stroke-linecap="round" fill="none" stroke-width="6">
+    <path stroke="url(#edgeGradient)"
+          d="M 50 220 
+             C 200 160, 350 260, 500 200
+             S 800 140, 950 210
+             S 1200 260, 1350 180"/>
+    <path stroke="url(#edgeGradient)"
+          d="M 50 200
+             C 220 120, 360 220, 520 170
+             S 780 190, 960 160
+             S 1160 220, 1350 140"/>
+    <path stroke="url(#edgeGradient)"
+          d="M 50 240
+             C 210 260, 360 190, 520 230
+             S 780 250, 960 220
+             S 1180 200, 1350 210"/>
+  </g>
+
+  <!-- Core twisting ribbon -->
+  <g filter="url(#coreGlow)">
+    <path fill="none" stroke="url(#coreGradient)" stroke-width="18" stroke-linecap="round"
+          d="M 40 220
+             C 210 170, 360 250, 520 190
+             S 780 150, 960 210
+             S 1180 250, 1360 190"/>
+    <!-- a narrower bright center -->
+    <path fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"
+          d="M 40 220
+             C 210 170, 360 250, 520 190
+             S 780 150, 960 210
+             S 1180 250, 1360 190"/>
+  </g>
+
+  <!-- Random sparks along the beam -->
+  <g>
+    <circle cx="260" cy="195" r="22" fill="url(#sparkGradient)" />
+    <circle cx="490" cy="212" r="24" fill="url(#sparkGradient)" />
+    <circle cx="720" cy="190" r="20" fill="url(#sparkGradient)" />
+    <circle cx="950" cy="210" r="26" fill="url(#sparkGradient)" />
+    <circle cx="1180" cy="200" r="22" fill="url(#sparkGradient)" />
+  </g>
+</svg>
