@@ -3,15 +3,22 @@ import "../styles/reset.scss"; // Keeping reset for now, or could rely on Tailwi
 import ThemeToggle from '../components/ThemeToggle.astro';
 import VideoBackground from '../components/VideoBackground.astro';
 import Ecto1 from '../components/Ecto1.astro';
-import { siteUrl, title as siteTitle, social } from "../consts";
+import { siteUrl, title as siteTitle, social, author } from "../consts";
 
 interface Props {
 	title: string;
 	description?: string;
 	isHome?: boolean;
+	image?: string;
+	publishedDate?: string;
+	type?: 'website' | 'article';
 }
 
-const { title, description, isHome = false } = Astro.props;
+const { title, description, isHome = false, image, publishedDate, type = 'website' } = Astro.props;
+const defaultDescription = "Peter Tasker is a software developer located in Ottawa Ontario, Canada.";
+const pageDescription = description || defaultDescription;
+const ogImage = image || `${siteUrl}/assets/og-image.png`;
+const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
 
 const assets = {
   x: "/assets/x.svg",
@@ -44,10 +51,40 @@ const script = `
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content={description || "Peter Tasker is a software developer located in Ottawa Ontario, Canada."} />
+		<meta name="description" content={pageDescription} />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		
+		<!-- Favicons -->
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+		
 		<meta name="generator" content={Astro.generator} />
+		<link rel="canonical" href={canonicalURL} />
+		
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content={type} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={title ? `${title} | ${siteTitle}` : siteTitle} />
+		<meta property="og:description" content={pageDescription} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:site_name" content={siteTitle} />
+		{publishedDate && <meta property="article:published_time" content={publishedDate} />}
+		{publishedDate && <meta property="article:author" content={author.name} />}
+		
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@petetasker" />
+		<meta name="twitter:creator" content="@petetasker" />
+		<meta name="twitter:title" content={title ? `${title} | ${siteTitle}` : siteTitle} />
+		<meta name="twitter:description" content={pageDescription} />
+		<meta name="twitter:image" content={ogImage} />
+		
+		<!-- Additional SEO -->
+		<meta name="author" content={author.name} />
+		<meta name="robots" content="index, follow" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Roboto:wght@400;700&display=swap" rel="stylesheet">

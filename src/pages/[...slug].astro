@@ -1,6 +1,7 @@
 ---
 import ProgrammerLayout from '../layouts/ProgrammerLayout.astro';
 import CodeBlock from '../components/CodeBlock.astro';
+import { siteUrl, author } from '../consts';
 
 export async function getStaticPaths() {
   const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
@@ -38,9 +39,47 @@ const formattedDate = new Date(post.frontmatter.date).toLocaleDateString('en-US'
 const tags = post.frontmatter.tag || [];
 const categories = post.frontmatter.category || [];
 const allTags = [...new Set([...categories, ...tags])].filter(Boolean);
+
+// SEO data
+const postUrl = new URL(Astro.url.pathname, siteUrl).href;
+const postDescription = post.frontmatter.excerpt || post.frontmatter.description || rawContent.substring(0, 155);
+const postImage = post.frontmatter.thumbnail ? new URL(post.frontmatter.thumbnail, siteUrl).href : `${siteUrl}/assets/og-image.png`;
+const isoDate = new Date(post.frontmatter.date).toISOString();
+
+// JSON-LD structured data
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": post.frontmatter.title,
+  "description": postDescription,
+  "image": postImage,
+  "datePublished": isoDate,
+  "dateModified": isoDate,
+  "author": {
+    "@type": "Person",
+    "name": author.name,
+    "url": siteUrl
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": author.name
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": postUrl
+  },
+  "keywords": allTags.join(', ')
+};
 ---
 
-<ProgrammerLayout title={post.frontmatter.title} description={post.frontmatter.description}>
+<ProgrammerLayout 
+  title={post.frontmatter.title} 
+  description={postDescription}
+  type="article"
+  publishedDate={isoDate}
+  image={postImage}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   <article class="max-w-4xl mx-auto">
     <header class="mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
       <h1 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-6">
