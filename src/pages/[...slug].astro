@@ -1,6 +1,7 @@
 ---
 import ProgrammerLayout from '../layouts/ProgrammerLayout.astro';
 import CodeBlock from '../components/CodeBlock.astro';
+import Comments from '../components/Comments.jsx';
 import { siteUrl, author } from '../consts';
 
 export async function getStaticPaths() {
@@ -149,4 +150,9 @@ const structuredData = {
   </article>
   
   <CodeBlock />
+
+  <div class="max-w-4xl mx-auto mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+    <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">Comments</h2>
+    <Comments client:load />
+  </div>
 </ProgrammerLayout>
