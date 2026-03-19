@@ -1,0 +1,4 @@
+{
+  "origins": ["https://petetasker.com"],
+  "originsRegex": ["http://localhost:\\d+"]
+}
