@@ -20,7 +20,7 @@ export const social = {
 //   4. Replace the placeholder strings below with the real values.
 export const giscus = {
     repo: "ptasker/petetasker.com" as `${string}/${string}`,
-    repoId: "YOUR_REPO_ID",
+    repoId: "MDEwOlJlcG9zaXRvcnkyNzExNTUwNDQ=",
     category: "Announcements",
-    categoryId: "YOUR_CATEGORY_ID",
+    categoryId: "DIC_kwDOECl_ZM4C4xeQ",
 };
