@@ -1663,89 +1663,139 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
   // --- Proton beam -------------------------------------------------------------
 
   function drawBeam() {
+    // Modelled on the film look: a white-hot core fading through yellow to
+    // orange, with purple/blue lightning coiling around the stream and a hard
+    // flash at the wand tip.
     const pts = beamPoints
+    if (pts.length < 2) return
     ctx.save()
     ctx.lineCap = "round"
     ctx.lineJoin = "round"
 
-    const path = (offset: number) => {
+    const path = (jitter: number) => {
       ctx.beginPath()
       ctx.moveTo(pts[0].x, pts[0].y)
       for (let i = 1; i < pts.length; i++) {
-        const ox = offset ? rand(-offset, offset) : 0
-        const oy = offset ? rand(-offset, offset) : 0
+        const ox = jitter ? rand(-jitter, jitter) : 0
+        const oy = jitter ? rand(-jitter, jitter) : 0
         ctx.lineTo(pts[i].x + ox, pts[i].y + oy)
       }
     }
 
-    // Outer heat glow
+    // Perpendicular direction at each point, for the coiling tendrils.
+    const perp = (i: number) => {
+      const a = pts[Math.max(0, i - 1)]
+      const b = pts[Math.min(pts.length - 1, i + 1)]
+      const dx = b.x - a.x
+      const dy = b.y - a.y
+      const d = Math.hypot(dx, dy) || 1
+      return { x: -dy / d, y: dx / d }
+    }
+
+    // Additive glow at night; against the bright daytime sky additive
+    // blending washes out to white, so fall back to normal compositing.
+    ctx.globalCompositeOperation = isDark() ? "lighter" : "source-over"
     path(0)
-    ctx.strokeStyle = "rgba(255, 110, 20, 0.22)"
-    ctx.lineWidth = 18
+    ctx.strokeStyle = "rgba(255, 60, 0, 0.16)"
+    ctx.lineWidth = 30
     ctx.stroke()
-    // Orange stream
     path(0)
-    ctx.strokeStyle = "rgba(255, 82, 0, 0.9)"
-    ctx.lineWidth = 6
+    ctx.strokeStyle = "rgba(255, 110, 10, 0.35)"
+    ctx.lineWidth = 16
     ctx.stroke()
-    // Hot core
     path(0)
-    ctx.strokeStyle = "#ffd68a"
-    ctx.lineWidth = 2.4
+    ctx.strokeStyle = "rgba(255, 160, 40, 0.75)"
+    ctx.lineWidth = 8
     ctx.stroke()
-    // Blue electrical crackle
-    path(5)
-    ctx.strokeStyle = "rgba(96, 190, 255, 0.9)"
-    ctx.lineWidth = 1.3
+    path(0)
+    ctx.strokeStyle = "rgba(255, 225, 140, 0.95)"
+    ctx.lineWidth = 4.5
     ctx.stroke()
-    path(3)
-    ctx.strokeStyle = "rgba(255,255,255,0.65)"
-    ctx.lineWidth = 0.8
+    path(0)
+    ctx.strokeStyle = "#ffffff"
+    ctx.lineWidth = 2
     ctx.stroke()
-    // Short tendrils shooting off the stream
-    ctx.strokeStyle = "rgba(140, 205, 255, 0.85)"
-    ctx.lineWidth = 1
-    for (let k = 0; k < 4; k++) {
-      const i = 1 + Math.floor(Math.random() * (pts.length - 1))
-      const p = pts[i]
-      const a = rand(0, TAU)
-      const len = rand(6, 18)
+
+    // Purple and blue lightning coiling around the core
+    const coils: Array<[string, number, number, number]> = [
+      ["rgba(167, 139, 250, 0.95)", 0.62, 0, 1.6],
+      ["rgba(96, 165, 250, 0.9)", 0.62, Math.PI, 1.3],
+      ["rgba(221, 214, 254, 0.7)", 0.41, 1.3, 0.9],
+    ]
+    for (const [color, freq, phase, width] of coils) {
       ctx.beginPath()
-      ctx.moveTo(p.x, p.y)
-      ctx.lineTo(
-        p.x + Math.cos(a) * len * 0.5 + rand(-3, 3),
-        p.y + Math.sin(a) * len * 0.5 + rand(-3, 3),
-      )
-      ctx.lineTo(p.x + Math.cos(a) * len, p.y + Math.sin(a) * len)
+      for (let i = 0; i < pts.length; i++) {
+        const f = i / (pts.length - 1)
+        const n = perp(i)
+        const amp = 4 + 6 * f
+        const off = Math.sin(i * freq + phase + time * 32) * amp + rand(-2, 2)
+        const x = pts[i].x + n.x * off
+        const y = pts[i].y + n.y * off
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.strokeStyle = color
+      ctx.lineWidth = width
       ctx.stroke()
     }
 
-    // Muzzle flash
-    const o = pts[0]
-    const mg = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, 12)
-    mg.addColorStop(0, "rgba(255,255,255,0.95)")
-    mg.addColorStop(0.4, "rgba(255,190,80,0.7)")
-    mg.addColorStop(1, "rgba(255,120,0,0)")
-    ctx.fillStyle = mg
-    ctx.fillRect(o.x - 12, o.y - 12, 24, 24)
+    // Little arcs and loops jumping off the stream
+    ctx.lineWidth = 1.1
+    for (let k = 0; k < 5; k++) {
+      const i = 1 + Math.floor(Math.random() * (pts.length - 1))
+      const p = pts[i]
+      const n = perp(i)
+      const side = Math.random() < 0.5 ? -1 : 1
+      const len = rand(8, 22)
+      const cx = p.x + n.x * side * len + rand(-6, 6)
+      const cy = p.y + n.y * side * len + rand(-6, 6)
+      const q = pts[Math.min(pts.length - 1, i + 2)]
+      ctx.strokeStyle =
+        k % 2 ? "rgba(167, 139, 250, 0.85)" : "rgba(125, 211, 252, 0.85)"
+      ctx.beginPath()
+      ctx.moveTo(p.x, p.y)
+      ctx.quadraticCurveTo(cx, cy, q.x, q.y)
+      ctx.stroke()
+    }
 
-    // Wrangle halo around the ghost
+    // Muzzle flash with a lens-flare star
+    const o = pts[0]
+    const flare = 14 + Math.sin(time * 50) * 3
+    const mg = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, flare)
+    mg.addColorStop(0, "rgba(255,255,255,1)")
+    mg.addColorStop(0.35, "rgba(255,230,160,0.85)")
+    mg.addColorStop(0.7, "rgba(255,140,40,0.4)")
+    mg.addColorStop(1, "rgba(255,80,0,0)")
+    ctx.fillStyle = mg
+    ctx.fillRect(o.x - flare, o.y - flare, flare * 2, flare * 2)
+    ctx.strokeStyle = "rgba(255,255,255,0.8)"
+    ctx.lineWidth = 1
+    for (let k = 0; k < 4; k++) {
+      const a = (k * Math.PI) / 4 + time * 3
+      const l = k % 2 ? flare * 1.6 : flare * 1.1
+      ctx.beginPath()
+      ctx.moveTo(o.x - Math.cos(a) * l, o.y - Math.sin(a) * l)
+      ctx.lineTo(o.x + Math.cos(a) * l, o.y + Math.sin(a) * l)
+      ctx.stroke()
+    }
+
+    // Wrangle halo where the stream grabs the ghost
     if (beamHit) {
       const e = pts[pts.length - 1]
       const rr = GHOST_R * ghost.scale + 12
       const hg = ctx.createRadialGradient(
         e.x,
         e.y,
-        rr * 0.4,
+        rr * 0.3,
         e.x,
         e.y,
-        rr * 1.6,
+        rr * 1.7,
       )
-      hg.addColorStop(0, "rgba(255, 140, 40, 0.5)")
-      hg.addColorStop(0.6, "rgba(120, 200, 255, 0.25)")
-      hg.addColorStop(1, "rgba(120, 200, 255, 0)")
+      hg.addColorStop(0, "rgba(255, 200, 120, 0.6)")
+      hg.addColorStop(0.5, "rgba(167, 139, 250, 0.3)")
+      hg.addColorStop(1, "rgba(96, 165, 250, 0)")
       ctx.fillStyle = hg
-      ctx.fillRect(e.x - rr * 1.6, e.y - rr * 1.6, rr * 3.2, rr * 3.2)
+      ctx.fillRect(e.x - rr * 1.7, e.y - rr * 1.7, rr * 3.4, rr * 3.4)
     }
     ctx.restore()
   }
