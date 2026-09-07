@@ -60,7 +60,7 @@ function saveBest(n: number) {
 const CAR_ACCEL = 620 // px/s^2
 const CAR_MAX_SPEED = 300 // px/s
 const CAR_FRICTION = 3.2 // per second
-const CAR_HALF = 78 // half-length of the car in px
+const CAR_HALF = 92 // half-length of the car in px
 const AIM_MIN = 25 // degrees above horizontal
 const AIM_MAX = 80
 const AIM_DEFAULT = 55
@@ -644,8 +644,8 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     // Shoulder of the Ghostbuster leaning out of the rear window (car-local
     // coordinates, car facing +x) plus the wand length along the aim angle.
     const a = rad(car.aim)
-    const lx = -13 + Math.cos(a) * 30
-    const ly = -60 - Math.sin(a) * 30
+    const lx = -20 + Math.cos(a) * 30
+    const ly = -53 - Math.sin(a) * 30
     return { x: car.x + car.facing * lx, y: groundY + ly }
   }
 
@@ -780,7 +780,7 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
 
   function emitSmoke() {
     // Puff from the rear tyre, drifting away behind the car.
-    const rearX = car.x - car.facing * 48
+    const rearX = car.x - car.facing * 52
     particles.push({
       x: rearX + rand(-4, 4),
       y: groundY - rand(2, 8),
@@ -1065,6 +1065,11 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
   // --- Ecto-1 ----------------------------------------------------------------
 
   function drawCar(pal: Palette) {
+    // Side view of the 1959 Cadillac Miller-Meteor: very long and low, with a
+    // long hood, a raked windshield, a flat roof, small wheels tucked well
+    // inboard, a huge rear overhang and red rocket fins on the rear fenders.
+    // Local coordinates: origin at the ground under the car centre, car
+    // facing +x (rear is negative x).
     const t = time
     ctx.save()
     ctx.translate(car.x, groundY)
@@ -1079,146 +1084,151 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     // Shadow on the road
     ctx.fillStyle = "rgba(0,0,0,0.35)"
     ctx.beginPath()
-    ctx.ellipse(-4, 2, CAR_HALF + 6, 5, 0, 0, TAU)
+    ctx.ellipse(-2, 2, CAR_HALF + 2, 4, 0, 0, TAU)
     ctx.fill()
 
-    // --- Roof rack (behind the roof): a full-length frame packed with gear ---
+    // --- Roof rack (behind the roof) ---
     // Antenna
     ctx.strokeStyle = "#b8bec6"
     ctx.lineWidth = 1.2
     ctx.beginPath()
-    ctx.moveTo(-72, -72)
-    ctx.lineTo(-76, -102)
+    ctx.moveTo(-74, -58)
+    ctx.lineTo(-79, -92)
     ctx.stroke()
     ctx.fillStyle = "#e5e7eb"
     ctx.beginPath()
-    ctx.arc(-76, -103, 1.6, 0, TAU)
+    ctx.arc(-79, -93, 1.6, 0, TAU)
     ctx.fill()
-    // Frame: bottom rail, top rail, posts
+    // Frame: bottom rail on the roof, top rail, posts
     ctx.fillStyle = "#9aa1a9"
-    ctx.fillRect(-72, -70, 100, 2.5)
-    ctx.fillRect(-72, -84, 100, 2)
-    for (const px of [-72, -48, -24, 0, 26]) ctx.fillRect(px, -84, 2, 15)
+    ctx.fillRect(-76, -58, 104, 2)
+    ctx.fillRect(-76, -71, 104, 1.8)
+    for (const px of [-76, -50, -24, 2, 26]) ctx.fillRect(px, -71, 1.8, 13)
     // Big silver storage tank
     ctx.fillStyle = "#c3c9d1"
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
-    roundRect(-66, -82, 26, 11, 5)
+    roundRect(-72, -69, 28, 10, 5)
     ctx.fill()
     ctx.stroke()
     ctx.fillStyle = "#7d848c"
-    ctx.fillRect(-60, -82, 2, 11)
-    ctx.fillRect(-47, -82, 2, 11)
+    ctx.fillRect(-65, -69, 2, 10)
+    ctx.fillRect(-51, -69, 2, 10)
     // Yellow and green cylinders
     ctx.fillStyle = "#e8c227"
-    roundRect(-38, -80, 12, 7, 3)
+    roundRect(-42, -67, 13, 7, 3)
     ctx.fill()
     ctx.stroke()
     ctx.fillStyle = "#4caf50"
-    roundRect(-25, -81, 10, 6, 3)
+    roundRect(-28, -68, 11, 6, 3)
     ctx.fill()
     ctx.stroke()
     // Equipment box
     ctx.fillStyle = "#6b7280"
-    roundRect(-13, -79, 12, 8, 2)
+    roundRect(-15, -67, 13, 8, 2)
     ctx.fill()
     ctx.stroke()
     // Radar dish
     ctx.strokeStyle = "#d5dae0"
     ctx.lineWidth = 2
     ctx.beginPath()
-    ctx.moveTo(6, -72)
-    ctx.lineTo(6, -84)
+    ctx.moveTo(4, -59)
+    ctx.lineTo(4, -70)
     ctx.stroke()
     ctx.beginPath()
-    ctx.arc(6, -86, 6, Math.PI * 1.05, Math.PI * 1.95)
+    ctx.arc(4, -72, 6, Math.PI * 1.05, Math.PI * 1.95)
     ctx.stroke()
     // Spotlight
     ctx.fillStyle = "#e5e7eb"
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.arc(20, -77, 3.5, 0, TAU)
+    ctx.arc(18, -64, 3.5, 0, TAU)
     ctx.fill()
     ctx.stroke()
-    // Ladder strapped along the rear of the rack
+    // Ladder lying along the top of the rack at the rear
     ctx.strokeStyle = "#d1d5db"
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(-72, -74)
-    ctx.lineTo(-40, -74)
-    ctx.moveTo(-72, -78)
-    ctx.lineTo(-40, -78)
-    for (let lx = -70; lx <= -42; lx += 6) {
-      ctx.moveTo(lx, -74)
-      ctx.lineTo(lx, -78)
+    ctx.moveTo(-78, -73)
+    ctx.lineTo(-44, -73)
+    ctx.moveTo(-78, -76)
+    ctx.lineTo(-44, -76)
+    for (let lx = -76; lx <= -46; lx += 6) {
+      ctx.moveTo(lx, -73)
+      ctx.lineTo(lx, -76)
     }
     ctx.stroke()
 
-    // --- Body ---
+    // --- Body silhouette ---
     ctx.lineJoin = "round"
     ctx.lineWidth = 1.5
     ctx.strokeStyle = outline
     ctx.fillStyle = white
     ctx.beginPath()
-    ctx.moveTo(-77, -18)
-    ctx.lineTo(-79, -42)
-    ctx.lineTo(-76, -46)
-    ctx.lineTo(-74, -66)
-    ctx.lineTo(24, -66)
-    ctx.lineTo(38, -45)
-    ctx.lineTo(70, -45)
-    ctx.lineTo(77, -40)
-    ctx.lineTo(78, -18)
+    ctx.moveTo(-88, -14) // rear bumper line
+    ctx.lineTo(-90, -36) // rear panel up to the belt line
+    ctx.lineTo(-84, -40) // rear deck
+    ctx.lineTo(-80, -56) // rear pillar (slightly raked)
+    ctx.lineTo(18, -56) // long flat roof
+    ctx.lineTo(34, -39) // raked windshield down to the cowl
+    ctx.lineTo(84, -37) // long hood
+    ctx.lineTo(90, -32) // nose
+    ctx.lineTo(90, -14) // front bumper line
     ctx.closePath()
     ctx.fill()
     ctx.stroke()
 
-    // Tail fin (1959 Cadillac): a long red rocket along the rear quarter
-    // that sweeps past the body into a vertical blade.
+    // --- Red rocket fin on the rear fender ---
     ctx.fillStyle = red
     ctx.beginPath()
-    ctx.moveTo(-30, -47)
-    ctx.lineTo(-72, -51)
-    ctx.lineTo(-88, -63)
-    ctx.lineTo(-90, -58)
-    ctx.lineTo(-88, -45)
-    ctx.lineTo(-30, -44)
+    ctx.moveTo(-36, -39) // pointed front tip on the rear door
+    ctx.lineTo(-84, -42)
+    ctx.lineTo(-94, -53) // blade rises at the very back
+    ctx.lineTo(-93, -36)
+    ctx.lineTo(-36, -35)
     ctx.closePath()
     ctx.fill()
     ctx.stroke()
-    // Chrome spear down the middle of the fin
+    // Chrome spear down the fin
     ctx.strokeStyle = chrome
     ctx.lineWidth = 1.2
     ctx.beginPath()
-    ctx.moveTo(-34, -46)
-    ctx.lineTo(-84, -50)
+    ctx.moveTo(-40, -37.5)
+    ctx.lineTo(-88, -40)
     ctx.stroke()
+    // Bullet tail light on the blade
+    ctx.fillStyle = "#ff3b3b"
     ctx.strokeStyle = outline
-    ctx.lineWidth = 1.5
-    // Red belt line continuing forward to the front door
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.arc(-91, -45, 2.2, 0, TAU)
+    ctx.fill()
+    ctx.stroke()
+    // Red belt line forward along the doors, chrome rocker trim
     ctx.fillStyle = red
-    ctx.fillRect(-30, -47, 62, 2)
-    // Chrome rocker trim along the sill
+    ctx.fillRect(-36, -39, 52, 2)
     ctx.fillStyle = chrome
-    ctx.fillRect(-70, -21, 140, 2)
+    ctx.fillRect(-84, -17, 170, 1.8)
 
-    // Windows
+    // --- Greenhouse: three shallow windows and a raked windshield ---
+    ctx.strokeStyle = outline
+    ctx.lineWidth = 1.2
     ctx.fillStyle = glass
-    roundRect(-70, -63, 30, 15, 2)
+    roundRect(-76, -53, 30, 12, 2)
     ctx.fill()
     ctx.stroke()
-    roundRect(-36, -63, 30, 15, 2)
+    roundRect(-42, -53, 28, 12, 2)
     ctx.fill()
     ctx.stroke()
-    roundRect(-2, -63, 22, 15, 2)
+    roundRect(-10, -53, 24, 12, 2)
     ctx.fill()
     ctx.stroke()
     ctx.beginPath()
-    ctx.moveTo(23, -63)
-    ctx.lineTo(29, -63)
-    ctx.lineTo(40, -47)
-    ctx.lineTo(29, -47)
+    ctx.moveTo(17, -53)
+    ctx.lineTo(23, -53)
+    ctx.lineTo(35, -41)
+    ctx.lineTo(24, -41)
     ctx.closePath()
     ctx.fill()
     ctx.stroke()
@@ -1226,105 +1236,98 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     ctx.strokeStyle = "rgba(255,255,255,0.7)"
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(-66, -52)
-    ctx.lineTo(-56, -62)
-    ctx.moveTo(-32, -52)
-    ctx.lineTo(-22, -62)
-    ctx.moveTo(2, -52)
-    ctx.lineTo(12, -62)
+    ctx.moveTo(-72, -43)
+    ctx.lineTo(-64, -52)
+    ctx.moveTo(-38, -43)
+    ctx.lineTo(-30, -52)
+    ctx.moveTo(-6, -43)
+    ctx.lineTo(2, -52)
     ctx.stroke()
-
     // Door seams
     ctx.strokeStyle = "rgba(0,0,0,0.25)"
-    ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(-38, -63)
-    ctx.lineTo(-40, -20)
-    ctx.moveTo(-4, -63)
-    ctx.lineTo(-6, -20)
-    ctx.moveTo(26, -63)
-    ctx.lineTo(28, -20)
+    ctx.moveTo(-44, -53)
+    ctx.lineTo(-45, -19)
+    ctx.moveTo(-12, -53)
+    ctx.lineTo(-13, -19)
+    ctx.moveTo(22, -53)
+    ctx.lineTo(24, -19)
     ctx.stroke()
 
-    // Bumpers
-    ctx.fillStyle = chrome
+    // --- Front end ---
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
-    roundRect(68, -28, 14, 7, 2)
-    ctx.fill()
-    ctx.stroke()
-    roundRect(-90, -28, 14, 7, 2)
-    ctx.fill()
-    ctx.stroke()
-    // Chrome grille on the nose
+    // Chrome bumpers (front and rear)
     ctx.fillStyle = chrome
-    roundRect(72, -41, 7, 12, 1.5)
+    roundRect(78, -22, 14, 6, 2)
+    ctx.fill()
+    ctx.stroke()
+    roundRect(-95, -22, 14, 6, 2)
+    ctx.fill()
+    ctx.stroke()
+    // Grille bar under the headlights
+    ctx.fillStyle = chrome
+    roundRect(82, -30, 9, 7, 1.5)
     ctx.fill()
     ctx.stroke()
     ctx.strokeStyle = "#8b949e"
     ctx.lineWidth = 0.8
     ctx.beginPath()
-    for (let gy = -39; gy < -30; gy += 2.5) {
-      ctx.moveTo(72.5, gy)
-      ctx.lineTo(78.5, gy)
+    for (let gy = -28.5; gy < -23; gy += 2) {
+      ctx.moveTo(82.5, gy)
+      ctx.lineTo(90.5, gy)
     }
     ctx.stroke()
+    // Quad headlights: a side-by-side pair in chrome bezels
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
-    // Quad headlights: two stacked bezels on the fender edge
-    for (const hy of [-42, -35]) {
+    for (const hx of [82, 88]) {
       ctx.fillStyle = chrome
       ctx.beginPath()
-      ctx.arc(74, hy, 3.6, 0, TAU)
+      ctx.arc(hx, -33, 3.2, 0, TAU)
       ctx.fill()
       ctx.stroke()
       ctx.fillStyle = "#fff5c2"
       ctx.beginPath()
-      ctx.arc(74, hy, 2.4, 0, TAU)
+      ctx.arc(hx, -33, 2, 0, TAU)
       ctx.fill()
     }
     if (pal.stars || mode === "playing") {
-      const hg = ctx.createRadialGradient(80, -35, 0, 80, -35, 26)
+      const hg = ctx.createRadialGradient(92, -32, 0, 92, -32, 28)
       hg.addColorStop(0, "rgba(255,245,200,0.35)")
       hg.addColorStop(1, "rgba(255,245,200,0)")
       ctx.fillStyle = hg
-      ctx.fillRect(74, -60, 40, 50)
+      ctx.fillRect(86, -60, 44, 56)
     }
-    // Tail light
-    ctx.fillStyle = "#ff3b3b"
-    ctx.beginPath()
-    ctx.arc(-86, -52, 2.4, 0, TAU)
-    ctx.fill()
-    ctx.stroke()
 
     // Yellow New York plate "ECTO-1" (un-mirrored so it always reads correctly)
     ctx.fillStyle = "#f5c518"
     ctx.strokeStyle = outline
-    roundRect(-83, -19, 20, 8, 1)
+    roundRect(-88, -15, 18, 7, 1)
     ctx.fill()
     ctx.stroke()
     ctx.save()
-    ctx.translate(-73, -13)
+    ctx.translate(-79, -9.5)
     ctx.scale(car.facing, 1)
     ctx.fillStyle = "#111"
-    ctx.font = 'bold 6px "Share Tech Mono", monospace'
+    ctx.font = 'bold 5.5px "Share Tech Mono", monospace'
     ctx.textAlign = "center"
     ctx.textBaseline = "alphabetic"
     ctx.fillText("ECTO-1", 0, 0)
     ctx.restore()
 
-    // Logo on the rear door
+    // Logo on the rear door, below the belt line
     ctx.save()
-    ctx.translate(-22, -33)
+    ctx.translate(-28, -26)
     ctx.scale(car.facing, 1)
-    drawNoGhostLogo(0, 0, 8)
+    drawNoGhostLogo(0, 0, 7)
     ctx.restore()
 
-    // Wheels
-    drawWheel(-46, -14)
-    drawWheel(46, -14)
+    // Wheels: small, tucked inboard, big rear overhang
+    drawWheel(-52, -12)
+    drawWheel(58, -12)
 
-    // --- Ghostbuster leaning out of the rear window ---
+    // --- Ghostbuster leaning out of the rear door window ---
     drawGhostbuster()
 
     // --- Emergency lights (drawn last so their glow sits on top) ---
@@ -1333,11 +1336,11 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     const redOn = Math.sin(t * 5.2 + 1) > 0.2
     const lightsOn = mode !== "attract" || !reducedMotion
     ctx.fillStyle = "#374151"
-    ctx.fillRect(8, -88, 26, 3)
-    drawBeacon(12, -92, "#3b82f6", lightsOn && blueA)
-    drawBeacon(21, -93, "#ef4444", lightsOn && redOn)
-    drawBeacon(30, -92, "#3b82f6", lightsOn && blueB)
-    drawBeacon(-56, -89, "#3b82f6", lightsOn && blueB)
+    ctx.fillRect(6, -74, 26, 3)
+    drawBeacon(10, -78, "#3b82f6", lightsOn && blueA)
+    drawBeacon(19, -79, "#ef4444", lightsOn && redOn)
+    drawBeacon(28, -78, "#3b82f6", lightsOn && blueB)
+    drawBeacon(-60, -76, "#3b82f6", lightsOn && blueB)
 
     ctx.restore()
 
@@ -1363,23 +1366,23 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     // Wheel arch
     ctx.fillStyle = "#1f2937"
     ctx.beginPath()
-    ctx.arc(x, y - 2, 16, Math.PI, 0)
+    ctx.arc(x, y - 3, 14.5, Math.PI, 0)
     ctx.fill()
     // Tyre
     ctx.fillStyle = "#111827"
     ctx.beginPath()
-    ctx.arc(x, y, 13, 0, TAU)
+    ctx.arc(x, y, 12, 0, TAU)
     ctx.fill()
     // Whitewall
     ctx.strokeStyle = "#f3f4f6"
-    ctx.lineWidth = 2.2
+    ctx.lineWidth = 2
     ctx.beginPath()
-    ctx.arc(x, y, 9.2, 0, TAU)
+    ctx.arc(x, y, 8.5, 0, TAU)
     ctx.stroke()
     // Hubcap, rotating
     ctx.fillStyle = "#d1d5db"
     ctx.beginPath()
-    ctx.arc(x, y, 5.5, 0, TAU)
+    ctx.arc(x, y, 5, 0, TAU)
     ctx.fill()
     ctx.strokeStyle = "#6b7280"
     ctx.lineWidth = 1
@@ -1428,7 +1431,10 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
 
   function drawGhostbuster() {
     // Drawn in car-local coordinates (car facing +x). The buster leans out of
-    // the rear door window: x in [-36,-6], sill at y = -48.
+    // the rear door window (x in [-42,-14], sill at y = -41). The figure was
+    // laid out for a sill at y = -48 and window centre x = -21, so shift it.
+    ctx.save()
+    ctx.translate(-7, 7)
     const a = rad(car.aim)
     const khaki = "#c9b58a"
     const khakiDark = "#a8935f"
@@ -1552,6 +1558,7 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     ctx.beginPath()
     ctx.arc(hand.x, hand.y, 2.8, 0, TAU)
     ctx.fill()
+    ctx.restore()
   }
 
   function drawCarSlime() {
@@ -1561,11 +1568,11 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     ctx.globalAlpha = 0.85 * Math.min(1, f * 3)
     ctx.fillStyle = "#7ee23c"
     const blobs = [
-      [-30, -58, 12, 7],
-      [-4, -62, 15, 8],
-      [22, -50, 10, 6],
-      [-46, -40, 8, 5],
-      [10, -38, 9, 5],
+      [-40, -50, 12, 7],
+      [-6, -54, 15, 8],
+      [30, -42, 10, 6],
+      [-62, -34, 8, 5],
+      [12, -30, 9, 5],
     ]
     for (const [bx, by, bw, bh] of blobs) {
       ctx.beginPath()
