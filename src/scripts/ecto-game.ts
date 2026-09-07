@@ -1079,50 +1079,81 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     // Shadow on the road
     ctx.fillStyle = "rgba(0,0,0,0.35)"
     ctx.beginPath()
-    ctx.ellipse(0, 2, CAR_HALF, 5, 0, 0, TAU)
+    ctx.ellipse(-4, 2, CAR_HALF + 6, 5, 0, 0, TAU)
     ctx.fill()
 
-    // --- Roof rack gear (behind the roof) ---
+    // --- Roof rack (behind the roof): a full-length frame packed with gear ---
     // Antenna
     ctx.strokeStyle = "#b8bec6"
     ctx.lineWidth = 1.2
     ctx.beginPath()
-    ctx.moveTo(-66, -70)
-    ctx.lineTo(-70, -96)
+    ctx.moveTo(-72, -72)
+    ctx.lineTo(-76, -102)
     ctx.stroke()
     ctx.fillStyle = "#e5e7eb"
     ctx.beginPath()
-    ctx.arc(-70, -97, 1.6, 0, TAU)
+    ctx.arc(-76, -103, 1.6, 0, TAU)
     ctx.fill()
+    // Frame: bottom rail, top rail, posts
+    ctx.fillStyle = "#9aa1a9"
+    ctx.fillRect(-72, -70, 100, 2.5)
+    ctx.fillRect(-72, -84, 100, 2)
+    for (const px of [-72, -48, -24, 0, 26]) ctx.fillRect(px, -84, 2, 15)
+    // Big silver storage tank
+    ctx.fillStyle = "#c3c9d1"
+    ctx.strokeStyle = outline
+    ctx.lineWidth = 1
+    roundRect(-66, -82, 26, 11, 5)
+    ctx.fill()
+    ctx.stroke()
+    ctx.fillStyle = "#7d848c"
+    ctx.fillRect(-60, -82, 2, 11)
+    ctx.fillRect(-47, -82, 2, 11)
+    // Yellow and green cylinders
+    ctx.fillStyle = "#e8c227"
+    roundRect(-38, -80, 12, 7, 3)
+    ctx.fill()
+    ctx.stroke()
+    ctx.fillStyle = "#4caf50"
+    roundRect(-25, -81, 10, 6, 3)
+    ctx.fill()
+    ctx.stroke()
+    // Equipment box
+    ctx.fillStyle = "#6b7280"
+    roundRect(-13, -79, 12, 8, 2)
+    ctx.fill()
+    ctx.stroke()
     // Radar dish
     ctx.strokeStyle = "#d5dae0"
     ctx.lineWidth = 2
     ctx.beginPath()
-    ctx.moveTo(14, -70)
-    ctx.lineTo(14, -78)
+    ctx.moveTo(6, -72)
+    ctx.lineTo(6, -84)
     ctx.stroke()
     ctx.beginPath()
-    ctx.arc(14, -79, 6, Math.PI * 1.05, Math.PI * 1.95)
+    ctx.arc(6, -86, 6, Math.PI * 1.05, Math.PI * 1.95)
     ctx.stroke()
-    // Storage tank
-    ctx.fillStyle = "#b8bfc7"
+    // Spotlight
+    ctx.fillStyle = "#e5e7eb"
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
-    roundRect(-60, -80, 22, 10, 4)
+    ctx.beginPath()
+    ctx.arc(20, -77, 3.5, 0, TAU)
     ctx.fill()
     ctx.stroke()
-    ctx.fillStyle = "#7d848c"
-    ctx.fillRect(-55, -80, 2, 10)
-    ctx.fillRect(-44, -80, 2, 10)
-    // Equipment box
-    ctx.fillStyle = "#6b7280"
-    roundRect(-30, -78, 14, 8, 2)
-    ctx.fill()
+    // Ladder strapped along the rear of the rack
+    ctx.strokeStyle = "#d1d5db"
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(-72, -74)
+    ctx.lineTo(-40, -74)
+    ctx.moveTo(-72, -78)
+    ctx.lineTo(-40, -78)
+    for (let lx = -70; lx <= -42; lx += 6) {
+      ctx.moveTo(lx, -74)
+      ctx.lineTo(lx, -78)
+    }
     ctx.stroke()
-    // Rack rails
-    ctx.fillStyle = "#9aa1a9"
-    ctx.fillRect(-68, -70, 88, 2.5)
-    for (const px of [-66, -42, -18, 6, 16]) ctx.fillRect(px, -68, 2, 3)
 
     // --- Body ---
     ctx.lineJoin = "round"
@@ -1143,22 +1174,34 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     ctx.fill()
     ctx.stroke()
 
-    // Tail fin (1959 Cadillac): red sweep along the rear fender
+    // Tail fin (1959 Cadillac): a long red rocket along the rear quarter
+    // that sweeps past the body into a vertical blade.
     ctx.fillStyle = red
     ctx.beginPath()
-    ctx.moveTo(-78, -44)
-    ctx.lineTo(-81, -57)
-    ctx.lineTo(-71, -52)
-    ctx.lineTo(-48, -46)
-    ctx.lineTo(-48, -43)
-    ctx.lineTo(-78, -43)
+    ctx.moveTo(-30, -47)
+    ctx.lineTo(-72, -51)
+    ctx.lineTo(-88, -63)
+    ctx.lineTo(-90, -58)
+    ctx.lineTo(-88, -45)
+    ctx.lineTo(-30, -44)
     ctx.closePath()
     ctx.fill()
     ctx.stroke()
-    // Red belt line trim and front fender accent
+    // Chrome spear down the middle of the fin
+    ctx.strokeStyle = chrome
+    ctx.lineWidth = 1.2
+    ctx.beginPath()
+    ctx.moveTo(-34, -46)
+    ctx.lineTo(-84, -50)
+    ctx.stroke()
+    ctx.strokeStyle = outline
+    ctx.lineWidth = 1.5
+    // Red belt line continuing forward to the front door
     ctx.fillStyle = red
-    ctx.fillRect(-48, -46, 26, 2)
-    ctx.fillRect(40, -45, 30, 2)
+    ctx.fillRect(-30, -47, 62, 2)
+    // Chrome rocker trim along the sill
+    ctx.fillStyle = chrome
+    ctx.fillRect(-70, -21, 140, 2)
 
     // Windows
     ctx.fillStyle = glass
@@ -1203,22 +1246,43 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     ctx.lineTo(28, -20)
     ctx.stroke()
 
-    // Bumpers, lights
+    // Bumpers
     ctx.fillStyle = chrome
     ctx.strokeStyle = outline
     ctx.lineWidth = 1
-    roundRect(68, -27, 12, 6, 2)
+    roundRect(68, -28, 14, 7, 2)
     ctx.fill()
     ctx.stroke()
-    roundRect(-82, -27, 12, 6, 2)
+    roundRect(-90, -28, 14, 7, 2)
     ctx.fill()
     ctx.stroke()
-    // Headlight
-    ctx.fillStyle = "#fff5c2"
+    // Chrome grille on the nose
+    ctx.fillStyle = chrome
+    roundRect(72, -41, 7, 12, 1.5)
+    ctx.fill()
+    ctx.stroke()
+    ctx.strokeStyle = "#8b949e"
+    ctx.lineWidth = 0.8
     ctx.beginPath()
-    ctx.arc(75, -35, 3.2, 0, TAU)
-    ctx.fill()
+    for (let gy = -39; gy < -30; gy += 2.5) {
+      ctx.moveTo(72.5, gy)
+      ctx.lineTo(78.5, gy)
+    }
     ctx.stroke()
+    ctx.strokeStyle = outline
+    ctx.lineWidth = 1
+    // Quad headlights: two stacked bezels on the fender edge
+    for (const hy of [-42, -35]) {
+      ctx.fillStyle = chrome
+      ctx.beginPath()
+      ctx.arc(74, hy, 3.6, 0, TAU)
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = "#fff5c2"
+      ctx.beginPath()
+      ctx.arc(74, hy, 2.4, 0, TAU)
+      ctx.fill()
+    }
     if (pal.stars || mode === "playing") {
       const hg = ctx.createRadialGradient(80, -35, 0, 80, -35, 26)
       hg.addColorStop(0, "rgba(255,245,200,0.35)")
@@ -1229,18 +1293,18 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     // Tail light
     ctx.fillStyle = "#ff3b3b"
     ctx.beginPath()
-    ctx.arc(-78, -35, 2.6, 0, TAU)
+    ctx.arc(-86, -52, 2.4, 0, TAU)
     ctx.fill()
     ctx.stroke()
 
-    // Rear plate "ECTO-1" (un-mirrored so it always reads correctly)
-    ctx.fillStyle = "#fafafa"
+    // Yellow New York plate "ECTO-1" (un-mirrored so it always reads correctly)
+    ctx.fillStyle = "#f5c518"
     ctx.strokeStyle = outline
-    roundRect(-73, -21, 20, 8, 1)
+    roundRect(-83, -19, 20, 8, 1)
     ctx.fill()
     ctx.stroke()
     ctx.save()
-    ctx.translate(-63, -15)
+    ctx.translate(-73, -13)
     ctx.scale(car.facing, 1)
     ctx.fillStyle = "#111"
     ctx.font = 'bold 6px "Share Tech Mono", monospace'
@@ -1268,9 +1332,12 @@ export function initEctoGame(root: HTMLElement): EctoGameHandle {
     const blueB = !blueA
     const redOn = Math.sin(t * 5.2 + 1) > 0.2
     const lightsOn = mode !== "attract" || !reducedMotion
-    drawBeacon(-50, -84, "#3b82f6", lightsOn && blueA)
-    drawBeacon(-8, -82, "#ef4444", lightsOn && redOn)
-    drawBeacon(0, -82, "#3b82f6", lightsOn && blueB)
+    ctx.fillStyle = "#374151"
+    ctx.fillRect(8, -88, 26, 3)
+    drawBeacon(12, -92, "#3b82f6", lightsOn && blueA)
+    drawBeacon(21, -93, "#ef4444", lightsOn && redOn)
+    drawBeacon(30, -92, "#3b82f6", lightsOn && blueB)
+    drawBeacon(-56, -89, "#3b82f6", lightsOn && blueB)
 
     ctx.restore()
 
