@@ -1,0 +1,92 @@
+---
+// ECTO-1 GHOST PATROL
+// A small Ghostbusters mini-game drawn on a <canvas>. Drive the Ecto-1 left
+// and right, and fire the proton pack at Slimer from the rear window.
+// All game logic lives in src/scripts/ecto-game.ts.
+---
+
+<div
+  class="ecto-game relative w-full h-[220px] sm:h-[260px] bg-slate-900 select-none"
+  data-ecto-game
+>
+  <canvas
+    class="block w-full h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-green-400"
+    tabindex="0"
+    role="img"
+    aria-label="Ecto-1 Ghost Patrol: a mini-game. Drive the Ecto-1 left and right and fire the proton pack at Slimer. Click or tap to start, use the left and right arrow keys to drive, space to fire, and up and down arrows to aim."
+  ></canvas>
+
+  <!-- On-screen controls for touch devices (shown via CSS on coarse pointers) -->
+  <div class="ecto-touch absolute inset-x-0 bottom-3 px-4 flex justify-between items-end pointer-events-none">
+    <div class="flex gap-3 pointer-events-auto">
+      <button type="button" class="ecto-btn" data-act="left" aria-label="Drive left">◀</button>
+      <button type="button" class="ecto-btn" data-act="right" aria-label="Drive right">▶</button>
+    </div>
+    <div class="pointer-events-auto">
+      <button type="button" class="ecto-btn ecto-btn-fire" data-act="fire" aria-label="Fire proton pack">FIRE</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ecto-touch {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .ecto-touch {
+      display: flex;
+    }
+  }
+
+  .ecto-btn {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(15, 23, 42, 0.55);
+    color: #f8fafc;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    backdrop-filter: blur(2px);
+  }
+
+  .ecto-btn:active {
+    background: rgba(74, 222, 128, 0.55);
+    border-color: #4ade80;
+  }
+
+  .ecto-btn-fire {
+    width: 4.25rem;
+    height: 4.25rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    border-color: rgba(255, 138, 40, 0.8);
+    background: rgba(255, 82, 0, 0.35);
+  }
+
+  .ecto-btn-fire:active {
+    background: rgba(255, 138, 40, 0.75);
+    border-color: #ffd166;
+  }
+</style>
+
+<script>
+  import { initEctoGame } from '../scripts/ecto-game'
+
+  document.querySelectorAll<HTMLElement>('[data-ecto-game]').forEach(el => {
+    try {
+      initEctoGame(el)
+    } catch (err) {
+      console.error('Ecto-1 Ghost Patrol failed to start', err)
+    }
+  })
+</script>
