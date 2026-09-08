@@ -2,7 +2,7 @@
 import "../styles/reset.scss"; // Keeping reset for now, or could rely on Tailwind preflight
 import ThemeToggle from '../components/ThemeToggle.astro';
 import VideoBackground from '../components/VideoBackground.astro';
-import Ecto1 from '../components/Ecto1.astro';
+import EctoGame from '../components/EctoGame.astro';
 import { siteUrl, title as siteTitle, social, author } from "../consts";
 
 interface Props {
@@ -149,7 +149,7 @@ const script = `
 
         <!-- Footer -->
         <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 relative overflow-hidden">
-            <Ecto1 />
+            <EctoGame />
             
             <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-6">
