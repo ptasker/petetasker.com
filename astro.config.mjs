@@ -1,12 +1,20 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import tailwind from '@astrojs/tailwind';
+import tailwind from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [react(), tailwind(), mdx(), sitemap()],
+  integrations: [react(), mdx(), sitemap()],
+  vite: {
+    css: {
+      postcss: {
+        plugins: [tailwind(), autoprefixer()],
+      },
+    },
+  },
   site: 'https://petetasker.com',
   markdown: {
     shikiConfig: {

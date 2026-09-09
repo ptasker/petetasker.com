@@ -1,6 +1,9 @@
 {
   "name": "petetasker.com",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -12,12 +15,11 @@
     "build:sprites": "node scripts/build-ghost-patrol-assets.mjs"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.14",
-    "@astrojs/react": "^4.4.2",
-    "@astrojs/rss": "^4.0.17",
-    "@astrojs/tailwind": "^5.1.5",
+    "@astrojs/mdx": "^8.0.1",
+    "@astrojs/react": "^6.0.5",
+    "@astrojs/rss": "^4.0.19",
     "@giscus/react": "^3.1.0",
-    "astro": "^5.18.1",
+    "astro": "^7.3.2",
     "classnames": "^2.5.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -27,9 +29,10 @@
     "typewriter-effect": "^2.22.0"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "^3.7.1",
+    "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/react": "^19.2.14",
+    "autoprefixer": "^10.4.21",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3"
   }
