@@ -1,192 +1,160 @@
----
-// Ecto-1 Car Animation Component
----
-
-<!-- Ecto-1 Driving Lane -->
-<div class="ecto-lane relative">
-    <div class="ecto-wrapper absolute" style="width: 200px;">
-        <!-- Emergency lights -->
-        <div class="lights-container absolute inset-0 pointer-events-none">
-            <div class="light light-front-1"></div>
-            <div class="light light-front-2"></div>
-            <div class="light light-back-1"></div>
-            <div class="light light-back-2"></div>
-        </div>
-        <!-- Smoke clouds behind the car -->
-        <div class="smoke-container absolute inset-0 pointer-events-none">
-            <!-- Back tire smoke -->
-            <div class="smoke smoke-1"></div>
-            <div class="smoke smoke-2"></div>
-            <div class="smoke smoke-3"></div>
-            <!-- Front tire smoke -->
-            <div class="smoke smoke-4"></div>
-            <div class="smoke smoke-5"></div>
-            <div class="smoke smoke-6"></div>
-        </div>
-        <img src="/assets/ecto.svg" alt="Ecto-1 Car" class="ecto-car w-full h-auto opacity-40 dark:invert relative z-10" />
+<ghost-patrol id="ghost-patrol" class="patrol">
+  <section class="cabinet" aria-labelledby="patrol-title">
+    <div class="dashboard">
+      <div class="identity"><span class="indicator" aria-hidden="true"></span><h2 id="patrol-title">GHOST PATROL</h2><span class="edition">ARCADE / 01</span></div>
+      <div class="readouts">
+        <span>SCORE <b data-score>00</b></span>
+        <span>BEST <b data-best>00</b></span>
+      </div>
     </div>
-</div>
+    <div class="stage">
+      <canvas tabindex="0" aria-label="Ghost Patrol game. Use up and down arrows or W and S to aim, hold Space to catch ghosts, and press Escape to pause." aria-describedby="patrol-help">Your browser needs Canvas support to play Ghost Patrol.</canvas>
+      <div class="overlay">
+        <span class="eyebrow" data-eyebrow>OFF THE CLOCK. ON PATROL.</span>
+        <h3 data-heading>Got a minute to bust some ghosts?</h3>
+        <p data-message>Hold your stream to drain a ghost, then spring the trap.<br />Clear each level’s quota — they get faster every time.</p>
+        <button class="start" type="button" disabled>Loading sprites…</button>
+      </div>
+      <button class="trap" type="button" hidden>TRAP! <kbd>T</kbd></button>
+      <div class="level-up" hidden>
+        <strong data-banner-level>LEVEL 2</strong>
+        <span data-banner-note>Ghosts ×1.12 · trap 6</span>
+      </div>
+      <div class="mission" hidden>
+        <span data-level>LEVEL 1</span>
+        <span data-quota>0/5 trapped</span>
+        <span data-lives>3 escapes left</span>
+        <span class="combo" data-combo hidden>1x</span>
+        <button class="pause" type="button">Pause</button>
+      </div>
+    </div>
+    <div class="controls">
+      <p id="patrol-help"><span class="desktop-help">↑ ↓ aim · hold SPACE to drain · T to trap</span><span class="touch-help">Hold on a ghost to drain it, then tap TRAP!</span><span class="help-tail"> · don’t let them pass!</span></p>
+      <span class="dispatch" role="status" aria-live="polite">Awaiting dispatch</span>
+    </div>
+  </section>
+</ghost-patrol>
+
+<script>
+  import { GhostPatrol } from '../scripts/ghost-patrol';
+  if (!customElements.get('ghost-patrol')) customElements.define('ghost-patrol', GhostPatrol);
+</script>
 
 <style>
-    /* Ecto-1 driving lane */
-    .ecto-lane {
-        height: 120px;
-        position: relative;
-        overflow: hidden;
-        /* border-bottom: 2px solid rgba(0, 0, 0, 0.1); */
-    }
-    
-    /* Emergency lights on top of car */
-    .lights-container {
-        z-index: 20;
-    }
-    
-    .light {
-        position: absolute;
-        top: 22%;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: rgba(65, 105, 225, 0.6);
-        box-shadow: 0 0 15px rgba(65, 105, 225, 0.8), 0 0 30px rgba(65, 105, 225, 0.4);
-        opacity: 0;
-        animation: flash 0.8s infinite;
-    }
-    
-    .light-front-1 {
-        left: 34%;
-        animation-delay: 0s;
-        background: rgba(31, 3, 245, 0.381);
-
-    }
-    
-    .light-front-2 {
-        left: 40%;
-        animation-delay: 0.4s;
-    }
-    .light-back-1 {
-        left: 78%;
-        animation-delay: 0.2s;
-    }
-
-    .light-back-2 {
-        left: 83%;
-        background: rgba(31, 3, 245, 0.381);
-        animation-delay: 0.4s;
-    }
-    
-    @keyframes flash {
-        0%, 100% {
-            opacity: 0;
-        }
-        50% {
-            opacity: 1;
-        }
-    }
-    
-    /* html.dark .ecto-lane {
-        border-bottom-color: rgba(255, 255, 255, 0.1);
-    } */
-    
-    /* Sliding animation wrapper */
-    .ecto-wrapper {
-        position: absolute;
-        top: 65%;
-        transform: translateY(-50%);
-        animation: slide-across 10s linear infinite;
-        pointer-events: none;
-    }
-    
-    @keyframes slide-across {
-        0% {
-            left: 100%;
-        }
-        100% {
-            left: -256px;
-        }
-    }
-    
-    /* Rattling/shaking animation for the car */
-    .ecto-car {
-        animation: rattle 0.15s infinite;
-    }
-    
-    @keyframes rattle {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(-1px, 1px) rotate(-0.5deg); }
-        50% { transform: translate(1px, -1px) rotate(0.5deg); }
-        75% { transform: translate(-1px, -1px) rotate(-0.3deg); }
-    }
-    
-    /* Smoke puffs animation */
-    .smoke-container {
-        overflow: visible;
-    }
-    
-    .smoke {
-        position: absolute;
-        bottom: 25%;
-        width: 8px;
-        height: 8px;
-        background: rgba(100, 100, 100, 0.8);
-        border-radius: 50%;
-        opacity: 0;
-        animation: smoke-puff 1.2s infinite ease-out;
-        image-rendering: pixelated;
-    }
-    
-    html.dark .smoke {
-        background: rgba(255, 255, 255, 0.7);
-    }
-    
-    /* Back tire smoke */
-    .smoke-1, .smoke-2, .smoke-3 {
-        left: 18%;
-        top: 90%
-    }
-    
-    .smoke-1 {
-        animation-delay: 0s;
-    }
-    
-    .smoke-2 {
-        animation-delay: 0.4s;
-    }
-    
-    .smoke-3 {
-        animation-delay: 0.8s;
-    }
-    
-    /* Front tire smoke */
-    .smoke-4, .smoke-5, .smoke-6 {
-        left: 80%;
-        top: 90%
-    }
-    
-    .smoke-4 {
-        animation-delay: 0.2s;
-    }
-    
-    .smoke-5 {
-        animation-delay: 0.6s;
-    }
-    
-    .smoke-6 {
-        animation-delay: 1s;
-    }
-    
-    @keyframes smoke-puff {
-        0% {
-            transform: translate(0, 0) scale(1);
-            opacity: 0.9;
-        }
-        50% {
-            transform: translate(15px, -8px) scale(0.8);
-            opacity: 0.6;
-        }
-        100% {
-            transform: translate(30px, -15px) scale(0.5);
-            opacity: 0;
-        }
-    }
+  /* Light is the base palette; the site's theme toggle adds .dark to <html>. */
+  .patrol {
+    --edge: #cbd5e1;
+    --panel: #f8fafc;
+    --rule: #e2e8f0;
+    --ink: #1e293b;
+    --dim: #64748b;
+    --accent: #3f8a1a;
+    --accent-soft: #4d9e22;
+    --accent-ink: #ffffff;
+    --veil-strong: #f8fafcee;
+    --veil-mid: #f8fafc33;
+    --shadow: #64748b1f;
+    display: block;
+    max-width: 896px;
+    margin: 28px auto 0;
+    padding: 0 24px;
+    font-family: 'Share Tech Mono', monospace;
+    /* Deep links land here: clear the sticky header rather than tucking under it. */
+    scroll-margin-top: 5rem;
+  }
+  /* Below Tailwind's md breakpoint the header grows a second nav row. */
+  @media (max-width: 767px) { .patrol { scroll-margin-top: 7rem; } }
+  /* Arriving via #ghost-patrol should be obvious. */
+  .patrol:target .cabinet {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent), 0 12px 36px var(--shadow);
+  }
+  :global(html.dark) .patrol {
+    --edge: #334155;
+    --panel: #080e19;
+    --rule: #253042;
+    --ink: #e2e8f0;
+    --dim: #94a3b8;
+    --accent: #bef264;
+    --accent-soft: #a3e635;
+    --accent-ink: #101b05;
+    --veil-strong: #080e19e8;
+    --veil-mid: #080e1933;
+    --shadow: #02061714;
+  }
+  .cabinet { overflow: hidden; border: 1px solid var(--edge); border-radius: 12px; background: var(--panel); color: var(--ink); box-shadow: 0 12px 36px var(--shadow); }
+  .dashboard, .controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 20px; }
+  .dashboard { border-bottom: 1px solid var(--rule); }
+  .identity, .readouts { display: flex; align-items: center; gap: 12px; }
+  h2 { margin: 0; font-size: 15px; letter-spacing: .12em; font-weight: 700; }
+  .indicator { width: 7px; height: 7px; background: var(--accent-soft); box-shadow: 0 0 12px var(--accent-soft); }
+  .edition, .readouts, .controls { font-size: 11px; color: var(--dim); }
+  .edition { margin-left: 5px; letter-spacing: .07em; }
+  .readouts { gap: 20px; white-space: nowrap; }
+  b { color: var(--accent); font-weight: 400; font-size: 17px; margin-left: 5px; }
+  .stage { position: relative; height: 300px; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; image-rendering: pixelated; }
+  :global(ghost-patrol[data-playing] canvas) { touch-action: none; }
+  canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 24px 36px; text-align: right; background: linear-gradient(90deg, transparent, var(--veil-mid) 30%, var(--veil-strong) 68%); }
+  .overlay[hidden], .mission[hidden], .combo[hidden], .trap[hidden], .level-up[hidden] { display: none; }
+  /* Between-level card, shown over the emptied street. */
+  .level-up {
+    position: absolute; inset: 0; z-index: 3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    background: color-mix(in srgb, var(--panel) 72%, transparent);
+    text-align: center;
+  }
+  .level-up strong { font-family: 'VT323', monospace; font-size: 46px; font-weight: 400; letter-spacing: .06em; color: var(--accent); line-height: 1; }
+  .level-up span { font-size: 11px; letter-spacing: .12em; color: var(--dim); }
+  /* Sits over the stunned ghost; the game positions it in percentages of the stage. */
+  .trap {
+    position: absolute; z-index: 2; transform: translate(-50%, -50%);
+    display: flex; align-items: center; gap: 6px;
+    border: 2px solid #fde68a; border-radius: 5px;
+    background: #f59e0b; color: #1c1207;
+    padding: 7px 13px; font-size: 14px; letter-spacing: .09em; font-weight: 700;
+    box-shadow: 0 0 0 3px #f59e0b33, 0 6px 18px #0006;
+    animation: trap-pulse .55s ease-in-out infinite alternate;
+  }
+  .trap kbd { font: inherit; font-size: 10px; border: 1px solid #92400e66; border-radius: 3px; padding: 0 4px; background: #fffbeb99; }
+  /* No keyboard to press on a touch device, and the stage is too narrow to spare it. */
+  @media (pointer: coarse) { .trap kbd { display: none; } }
+  .trap:hover { background: #fbbf24; }
+  @keyframes trap-pulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.07); } }
+  @media (prefers-reduced-motion: reduce) { .trap { animation: none; } }
+  .eyebrow { font-size: 10px; letter-spacing: .16em; color: var(--accent); }
+  h3 { max-width: 300px; margin: 10px 0; font-size: 27px; line-height: 1.05; font-family: 'VT323', monospace; font-weight: 400; }
+  .overlay p { font-size: 12px; line-height: 1.7; color: var(--dim); margin: 0 0 18px; }
+  button { cursor: pointer; font: inherit; }
+  .start { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent-soft); border-radius: 4px; padding: 9px 18px; font-size: 13px; }
+  .start:hover { background: var(--accent-soft); }
+  .start:disabled { opacity: .5; cursor: wait; }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .mission { position: absolute; top: 12px; left: 20px; right: 20px; display: flex; align-items: center; gap: 14px; color: var(--ink); font-size: 12px; pointer-events: none; }
+  .mission [data-level] { color: var(--accent); letter-spacing: .08em; }
+  .combo { color: var(--accent); font-size: 14px; }
+  .pause { margin-left: auto; pointer-events: auto; border: 1px solid var(--edge); border-radius: 4px; background: var(--panel); color: var(--ink); padding: 4px 10px; }
+  .controls { padding-top: 12px; padding-bottom: 12px; border-top: 1px solid var(--rule); }
+  .controls p { margin: 0; }
+  .dispatch { color: var(--accent); text-align: right; }
+  .touch-help { display: none; }
+  @media (pointer: coarse) { .desktop-help { display: none; } .touch-help { display: inline; } }
+  @media (max-width: 640px) {
+    .patrol { padding: 0 16px; margin-top: 20px; }
+    .dashboard, .controls { padding: 12px; gap: 8px; }
+    .edition, .help-tail { display: none; }
+    .identity { gap: 7px; }
+    h2 { font-size: 12px; }
+    .readouts { font-size: 10px; gap: 10px; }
+    b { font-size: 14px; margin-left: 2px; }
+    .overlay { align-items: center; justify-content: flex-start; text-align: center; padding: 24px 16px; background: linear-gradient(var(--veil-strong) 30%, var(--veil-mid) 65%, transparent); }
+    h3 { font-size: 25px; margin: 8px 0; }
+    .overlay p { font-size: 11px; margin-bottom: 12px; }
+    .controls { font-size: 10px; }
+    .dispatch { max-width: 100px; }
+    .mission { gap: 9px; font-size: 10px; left: 12px; right: 12px; }
+    .trap { padding: 6px 11px; font-size: 12px; }
+    .level-up strong { font-size: 36px; }
+  }
 </style>
