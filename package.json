@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "new-post": "node scripts/new-post.js"
+    "new-post": "node scripts/new-post.js",
+    "test": "node --test scripts/*.test.cjs",
+    "build:sprites": "node scripts/build-ghost-patrol-assets.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.14",
