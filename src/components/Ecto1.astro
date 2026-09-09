@@ -61,6 +61,13 @@
     font-family: 'Share Tech Mono', monospace;
     /* Deep links land here: clear the sticky header rather than tucking under it. */
     scroll-margin-top: 5rem;
+    /* Holding the trigger is a long press on a phone, which otherwise starts iOS text
+       selection and pops the Copy / Look Up callout over the game. Nothing in here is
+       worth selecting, so turn both off across the whole cabinet. */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   /* Below Tailwind's md breakpoint the header grows a second nav row. */
   @media (max-width: 767px) { .patrol { scroll-margin-top: 7rem; } }

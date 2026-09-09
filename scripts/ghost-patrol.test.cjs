@@ -545,6 +545,15 @@ test('every trap frame is centred on its chassis, with no neighbour bleeding in'
   })();
 });
 
+test('the cabinet opts out of touch text selection', () => {
+  // Holding the trigger is a long press on a phone. Without these, iOS starts selecting
+  // the HUD text and drops its Copy / Look Up callout on top of the game.
+  const component = fs.readFileSync('src/components/Ecto1.astro', 'utf8');
+  for (const rule of ['-webkit-touch-callout: none', '-webkit-user-select: none', 'user-select: none']) {
+    assert.ok(component.includes(rule), `the game shell should set ${rule}`);
+  }
+});
+
 test('the atlas constants match the packed sprite sheet on disk', () => {
   const { context } = setup();
   const { ATLAS } = context.exports;
