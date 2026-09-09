@@ -1,0 +1,14 @@
+{
+	"pid": 88973,
+	"port": 4323,
+	"url": "http://127.0.0.1:4323",
+	"urls": {
+		"local": [
+			"http://127.0.0.1:4323/"
+		],
+		"network": [],
+		"networkInterfaceNames": []
+	},
+	"background": true,
+	"startedAt": "2026-09-09T19:22:06.580Z"
+}

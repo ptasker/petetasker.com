@@ -12,7 +12,9 @@ import { mkdir } from 'node:fs/promises';
 
 const SHEET = 'art/ghost-patrol/sheet-source.png';   // car, ghosts, beam effects
 const TRAP_SHEET = 'art/ghost-patrol/trap-source.png'; // ghost trap, opening sequence
+const BACKDROP_SHEET = 'art/ghost-patrol/backdrop-source.png'; // day / night city, in four strips
 const OUT = 'public/assets/ghost-patrol/atlas.png';
+const BACKDROP_OUT = 'public/assets/ghost-patrol/backdrop.webp';
 
 // Cells are sized for the largest the game ever draws a sprite: a 2x device-pixel-ratio
 // screen at the widest layout, with a little headroom.
@@ -53,6 +55,25 @@ const TRAP_ROWS = {
 };
 const TRAP_SCALE = 0.55;
 const TRAP_MARGIN = 14;
+
+/**
+ * The backdrop sheet holds four horizontally-tiling strips: a distant skyline and a
+ * street, for night and for day. Only the street strips are packed. The skyline strips
+ * cannot sit behind them: the street art is fully opaque, including its own sky, so a
+ * layer behind it would never show, and butting the two together leaves a hard seam
+ * where two different blues meet. Each street strip already carries its own sky and
+ * distant city, so it stands alone as the whole scene.
+ *
+ * Both are cut to the same number of rows above their kerb line, so the ground the car
+ * sits on does not shift when the theme is toggled, and both edges are trimmed clear of
+ * the sheet's white gutters, which would otherwise draw as a pale seam.
+ */
+const BACKDROP_ROWS_ABOVE_KERB = 272;
+const BACKDROP_STRIPS = [
+  { name: 'night', top: 186, height: BACKDROP_ROWS_ABOVE_KERB },
+  { name: 'day', top: 684, height: BACKDROP_ROWS_ABOVE_KERB },
+];
+const BACKDROP_WIDTH = 1536;
 
 // Regions of the first sheet we take sprites from. The two beam bands are deliberately
 // skipped: the proton stream is drawn procedurally so it can be any length or angle.
@@ -337,6 +358,33 @@ async function main() {
   console.log(`  ghosts ${ghosts.length} @ ${GHOST.w}x${GHOST.h}`);
   console.log(`  trap   ${TRAP.frames} closed + ${TRAP.frames} open @ ${TRAP.w}x${TRAP.h} (scale ${TRAP_SCALE})`);
   console.log(`  smoke  ${smoke.length} @ ${SMOKE.w}x${SMOKE.h}`);
+
+  await buildBackdrop();
+}
+
+async function buildBackdrop() {
+  const meta = await sharp(BACKDROP_SHEET).metadata();
+  if (meta.width !== BACKDROP_WIDTH) {
+    throw new Error(`Backdrop sheet is ${meta.width}px wide, expected ${BACKDROP_WIDTH}`);
+  }
+  const layers = [];
+  let y = 0;
+  for (const strip of BACKDROP_STRIPS) {
+    layers.push({
+      input: await sharp(BACKDROP_SHEET)
+        .extract({ left: 0, top: strip.top, width: BACKDROP_WIDTH, height: strip.height })
+        .png().toBuffer(),
+      left: 0, top: y,
+    });
+    strip.y = y;
+    y += strip.height;
+  }
+  await sharp({ create: { width: BACKDROP_WIDTH, height: y, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite(layers)
+    .webp({ quality: 90, effort: 6 })
+    .toFile(BACKDROP_OUT);
+  console.log(`${BACKDROP_OUT}  ${BACKDROP_WIDTH}x${y}`);
+  for (const strip of BACKDROP_STRIPS) console.log(`  ${strip.name.padEnd(10)} y ${String(strip.y).padStart(3)} h ${strip.height}`);
 }
 
 await main();

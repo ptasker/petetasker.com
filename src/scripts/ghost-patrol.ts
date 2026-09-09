@@ -29,6 +29,20 @@ export const ATLAS = {
 };
 
 /**
+ * Geometry of public/assets/ghost-patrol/backdrop.webp, also packed by
+ * scripts/build-ghost-patrol-assets.mjs. Every strip tiles horizontally. The two street
+ * strips share a row count above the kerb, so the ground never moves between themes.
+ */
+export const BACKDROP = {
+  width: 1536,
+  height: 544,
+  night: { y: 0, h: 272 },
+  day: { y: 272, h: 272 },
+};
+/** Sized so the street just overfills the canvas above the kerb, leaving no bare sky. */
+const BACKDROP_SCALE = 0.965;
+
+/**
  * What makes each ghost feel different. `grip` scales how long the stream must hold,
  * `weight` how often it turns up, and `from` keeps the nastiest ones out of the early
  * levels so a run starts gently and escalates.
@@ -50,32 +64,34 @@ const TRAITS: Trait[] = [
 ];
 
 type Palette = {
-  sky: string; building: string; window: string; kerb: string; road: string; dash: string;
+  sky: string; road: string; dash: string;
   meter: string; meterFill: string; aim: string;
 };
+// Sky, road and dash are sampled from the backdrop art so the strip the game draws below
+// the kerb is continuous with the painted street above it.
 const PALETTES: Record<'dark' | 'light', Palette> = {
   dark: {
-    sky: '#080e19', building: '#101b2b', window: '#223047', kerb: '#182435', road: '#0c1421',
-    dash: '#344052', meter: '#233346', meterFill: '#bef264', aim: '#bef26455',
+    sky: '#0d2b66', road: '#1f2b41', dash: '#4f5e79',
+    meter: '#233346', meterFill: '#bef264', aim: '#bef26455',
   },
   light: {
-    sky: '#dbe9f7', building: '#9fb3c8', window: '#eaf2fa', kerb: '#7d92a8', road: '#c3d1de',
-    dash: '#f1f6fb', meter: '#9fb3c8', meterFill: '#3f8a1a', aim: '#3f8a1a66',
+    sky: '#58b3fe', road: '#3c4555', dash: '#7c8390',
+    meter: '#9fb3c8', meterFill: '#3f8a1a', aim: '#3f8a1a66',
   },
 };
 
 const CAPTURE_SECONDS = 0.65;
 /** Each level asks for one more ghost than the last, and speeds them all up. */
 const QUOTA_BASE = 4;
-const SPEED_PER_LEVEL = 0.12;
+const SPEED_PER_LEVEL = 0.14;
 const INTERLUDE_SECONDS = 1.8;
 /** The proton pack cooks if you lean on the trigger; heat bleeds off when you let go. */
 const OVERHEAT_SECONDS = 5;
 const COOLDOWN_SECONDS = 1;
 const HEAT_WARN_AT = 3.5;
 const HEAT_RECOVERY = 1.5;
-/** Skyline drift, in pixels per second: well under the road's 65 for a parallax feel. */
-const SKYLINE_SPEED = 9;
+/** Backdrop drift in pixels per second, well under the road's 65, so the street has depth. */
+const CITY_SPEED = 19;
 /** How long a drained ghost hangs stunned before it shakes loose. */
 const STUN_SECONDS = 2.5;
 const GROUND = 259;
@@ -88,6 +104,7 @@ export class GhostPatrol extends HTMLElement {
   private overlay!: HTMLElement;
   private startButton!: HTMLButtonElement;
   private atlas = new Image();
+  private backdrop = new Image();
   private ready = false;
   private mode: Mode = 'ready';
   private abort = new AbortController();
@@ -201,8 +218,9 @@ export class GhostPatrol extends HTMLElement {
 
   private async load() {
     this.atlas.src = '/assets/ghost-patrol/atlas.png';
+    this.backdrop.src = '/assets/ghost-patrol/backdrop.webp';
     try {
-      await this.atlas.decode();
+      await Promise.all([this.atlas.decode(), this.backdrop.decode()]);
       if (!this.isConnected) return;
       this.ready = true;
       this.startButton.disabled = false;
@@ -494,7 +512,7 @@ export class GhostPatrol extends HTMLElement {
     for (const ghost of this.ghosts) {
       const trait = TRAITS[ghost.appearance] ?? TRAITS[0];
       if (ghost === this.pending) continue; // Pinned: it neither advances nor recovers.
-      ghost.x -= ghost.speed * dt * (ghost === target ? 0.18 : 1);
+      ghost.x -= ghost.speed * dt * (ghost === target ? 0.25 : 1);
       ghost.health = Math.min(1, ghost.health - (ghost === target ? dt / (CAPTURE_SECONDS * trait.grip) : -dt * 0.35));
       if (ghost.health <= 0) {
         if (this.pending || this.trap) {
@@ -593,6 +611,20 @@ export class GhostPatrol extends HTMLElement {
       c.fillRect(x - 8, -4, 16, 8);
       c.fillStyle = '#fffbe6'; c.fillRect(x - 3, -3, 6, 6);
     }
+  }
+
+  /** Repeat the street across the canvas, scrolled so the scene reads as moving. */
+  private tile(strip: { y: number; h: number }, height: number, top: number) {
+    const c = this.ctx;
+    const width = BACKDROP.width * BACKDROP_SCALE;
+    const drift = this.reducedMotion.matches ? 0 : (this.elapsed * CITY_SPEED) % width;
+    // The city art is finely detailed rather than chunky pixels, so it is the one thing
+    // here that wants smoothing; without it the scroll shimmers.
+    c.imageSmoothingEnabled = true;
+    for (let x = -drift; x < this.width; x += width) {
+      c.drawImage(this.backdrop, 0, strip.y, BACKDROP.width, strip.h, Math.round(x), Math.round(top), Math.ceil(width), Math.ceil(height));
+    }
+    c.imageSmoothingEnabled = false;
   }
 
   /** Draw one atlas cell. `cell` is the source rect; the sprite is placed by its centre. */
@@ -739,24 +771,15 @@ export class GhostPatrol extends HTMLElement {
     if (this.shake > 0.2 && !this.reducedMotion.matches) {
       c.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
     }
-    // A quiet, procedural pixel skyline keeps the sprites in the foreground. It drifts
-    // past at a fraction of the road speed, so the street reads as moving without the
-    // background pulling the eye. Heights key off an absolute index, so each building
-    // keeps its own shape and windows as it scrolls.
-    const drift = this.reducedMotion.matches ? 0 : this.elapsed * SKYLINE_SPEED;
-    const firstBuilding = Math.floor(drift / 48), shift = drift % 48;
-    for (let n = 0; n < w / 48 + 2; n++) {
-      const index = firstBuilding + n;
-      const h = 32 + ((index * 37 + 19) % 95);
-      const bx = Math.round(n * 48 - shift);
-      c.fillStyle = colors.building; c.fillRect(bx, 247 - h, 42, h);
-      c.fillStyle = colors.window;
-      for (let y = 254 - h; y < 236; y += 15) for (let x = 8; x < 36; x += 12) {
-        if ((index + x + y) % 3) c.fillRect(bx + x, y, 4, 5);
-      }
-    }
-    c.fillStyle = colors.kerb; c.fillRect(0, 258, w, 1);
-    c.fillStyle = colors.road; c.fillRect(0, 259, w, 41);
+    // The painted city: a distant skyline and a street, each tiling horizontally and
+    // drifting at its own pace so the scene has depth. The strips stop at the kerb; the
+    // asphalt below is drawn here so its markings can race past at the car's speed
+    // rather than crawling along with the buildings.
+    const street = this.dark ? BACKDROP.night : BACKDROP.day;
+    const streetHeight = street.h * BACKDROP_SCALE;
+    this.tile(street, streetHeight, 258 - streetHeight);
+
+    c.fillStyle = colors.road; c.fillRect(0, 258, w, 42);
     c.fillStyle = colors.dash;
     const offset = this.reducedMotion.matches ? 0 : (this.elapsed * 65) % 80;
     for (let x = -offset; x < w; x += 80) c.fillRect(x, 283, 32, 2);

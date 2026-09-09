@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18.20.8"
+  NODE_VERSION = "22.19.0"
 
 [[plugins]]
   package = "@netlify/plugin-lighthouse"

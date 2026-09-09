@@ -101,6 +101,22 @@ test('a missed stream does not catch ghosts', () => {
   step(1); assert.equal(game.score, 0);
 });
 
+test('beam contact slows a moving ghost to 25 percent of its normal speed', () => {
+  const { game, step, ghost } = setup();
+  const target = ghost();
+  target.speed = 100;
+  game.ghosts = [target];
+  game.angle = Math.atan2(target.y - game.origin.y, target.x - game.origin.x);
+  game.pointerDown = true;
+  const initialX = target.x;
+  step(0.1);
+  assert.ok(Math.abs(initialX - target.x - 2.5) < 1e-8);
+  game.pointerDown = false;
+  const releasedX = target.x;
+  step(0.1);
+  assert.ok(Math.abs(releasedX - target.x - 10) < 1e-8);
+});
+
 test('three escapes end the shift and replay clears the old round', () => {
   const { game, step, ghost } = setup();
   game.ghosts = [ghost(0), ghost(1), ghost(2)];
@@ -221,11 +237,12 @@ test('a spawned ghost carries the level speed multiplier', () => {
   game.ghosts = []; game.spawnIn = 0;
   step(0.02);
   const first = game.ghosts[0].speed / TRAITS_SPEED(game.ghosts[0].appearance);
+  assert.equal(game.levelSpeed, 1, 'opening level keeps its base speed');
   game.level = 6;
   game.ghosts = []; game.spawnIn = 0;
   step(0.02);
   const later = game.ghosts[0].speed / TRAITS_SPEED(game.ghosts[0].appearance);
-  assert.ok(later > first * 1.4, `level 6 ghosts should be much faster (${first} -> ${later})`);
+  assert.ok(Math.abs(later / first - 1.7) < 1e-8, 'level 6 adds five 14-percent base-speed increases');
 });
 
 test('ghosts do not crawl on a narrow screen', () => {
@@ -486,32 +503,47 @@ test('all beam layers share one unbroken path from muzzle to nearest ghost', () 
   }
 });
 
-test('the skyline drifts past, slower than the road, keeping each building its own', () => {
-  const { game } = setup();
+test('the street tiles across the canvas and scrolls slower than the road', () => {
+  const { game, context } = setup();
+  const { BACKDROP } = context.exports;
   game.reducedMotion.matches = false;
-  const buildingsAt = (elapsed) => {
+  const drawsAt = (elapsed) => {
     const seen = [];
     game.elapsed = elapsed;
-    game.ctx.fillRect = function (x, y, w, h) { if (w === 42) seen.push({ x, h }); };
+    game.ctx.drawImage = (_image, sx, sy, sw, sh, dx, dy, dw, dh) => {
+      if (sw === BACKDROP.width) seen.push({ sy, dx, dy, dh });
+    };
     game.draw();
     return seen;
   };
-  const still = buildingsAt(0);
-  const later = buildingsAt(1);
-  assert.ok(still.length > 3, 'there should be a skyline to look at');
-  assert.equal(later.length, still.length);
-  // One second on, every building has slid left by the skyline speed, keeping its height.
-  assert.equal(later[0].x, still[0].x - 9);
-  assert.equal(later[0].h, still[0].h, 'a building keeps its own shape as it scrolls');
-  assert.ok(still[0].x - later[0].x < 65, 'and drifts slower than the road markings');
-  const frozen = (() => { game.reducedMotion.matches = true; return buildingsAt(5); })();
-  assert.equal(frozen[0].x, still[0].x, 'reduced motion holds the skyline still');
+  const still = drawsAt(0);
+  assert.ok(still.length >= 1);
+  assert.equal(still[0].sy, BACKDROP.night.y, 'the dark theme draws the night street');
+  // It must overfill the canvas above the kerb, or bare sky shows above the rooftops.
+  assert.ok(still[0].dy <= 0, `the street should reach the top of the canvas, sat at ${still[0].dy}`);
+  assert.ok(still[0].dy + still[0].dh >= 258, 'and reach down to the kerb');
+
+  const later = drawsAt(1);
+  assert.equal(later[0].dx, -19, 'the street creeps');
+  assert.ok(Math.abs(later[0].dx) < 65, 'slower than the road markings');
+
+  // Once drifted past a tile width, a second copy covers the gap it leaves behind.
+  const wrapped = drawsAt(40);
+  assert.ok(wrapped.length > 1, 'the street should repeat across the canvas');
+
+  game.dark = false;
+  assert.equal(drawsAt(0)[0].sy, BACKDROP.day.y, 'the light theme draws the day street');
+
+  game.dark = true;
+  game.reducedMotion.matches = true;
+  // Loose equality on purpose: a zero drift rounds to -0, which is still no movement.
+  for (const draw of drawsAt(30)) assert.ok(draw.dx === 0, 'reduced motion holds the city still');
 });
 
 test('every trap frame is centred on its chassis, with no neighbour bleeding in', () => {
   const sharp = require('sharp');
   const { context } = setup();
-  const { ATLAS } = context.exports;
+  const { ATLAS, BACKDROP } = context.exports;
   return (async () => {
     for (const [name, row] of [['closed', ATLAS.trapClosed], ['open', ATLAS.trapOpen]]) {
       const centres = [];
@@ -556,7 +588,7 @@ test('the cabinet opts out of touch text selection', () => {
 
 test('the atlas constants match the packed sprite sheet on disk', () => {
   const { context } = setup();
-  const { ATLAS } = context.exports;
+  const { ATLAS, BACKDROP } = context.exports;
   const png = fs.readFileSync('public/assets/ghost-patrol/atlas.png');
   assert.equal(png.readUInt32BE(16), ATLAS.width, 'atlas.png width must match ATLAS.width');
   assert.equal(png.readUInt32BE(20), ATLAS.height, 'atlas.png height must match ATLAS.height');
@@ -578,8 +610,15 @@ test('the atlas constants match the packed sprite sheet on disk', () => {
   for (const cell of [ATLAS.burst, ATLAS.spark]) {
     assert.ok(cell.y + cell.h <= ATLAS.car.h, 'effect cells must stay inside the car row');
   }
-  // The packer is the other half of this contract; keep its cell sizes in step.
+  // Both street strips must keep the same number of rows above the kerb, or the ground
+  // the car sits on would jump when the theme is toggled.
   const packer = fs.readFileSync('scripts/build-ghost-patrol-assets.mjs', 'utf8');
+  assert.equal(BACKDROP.night.h, BACKDROP.day.h);
+  assert.equal(BACKDROP.day.y, BACKDROP.night.y + BACKDROP.night.h);
+  assert.equal(BACKDROP.height, BACKDROP.day.y + BACKDROP.day.h);
+  assert.match(packer, new RegExp(`const BACKDROP_ROWS_ABOVE_KERB = ${BACKDROP.night.h};`));
+  assert.match(packer, new RegExp(`const BACKDROP_WIDTH = ${BACKDROP.width};`));
+  // The packer is the other half of this contract; keep its cell sizes in step.
   assert.match(packer, new RegExp(`const CAR = \\{ w: ${ATLAS.car.w}, h: ${ATLAS.car.h} \\}`));
   assert.match(packer, new RegExp(`const GHOST = \\{ w: ${ATLAS.ghost.w}, h: ${ATLAS.ghost.h}, columns: ${ATLAS.ghost.columns}`));
   assert.match(packer, new RegExp(`const BURST = \\{ w: ${ATLAS.burst.w}, h: ${ATLAS.burst.h} \\}`));
