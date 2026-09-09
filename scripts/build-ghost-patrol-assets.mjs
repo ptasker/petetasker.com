@@ -15,6 +15,27 @@ const TRAP_SHEET = 'art/ghost-patrol/trap-source.png'; // ghost trap, opening se
 const BACKDROP_SHEET = 'art/ghost-patrol/backdrop-source.png'; // day / night city, in four strips
 const OUT = 'public/assets/ghost-patrol/atlas.png';
 const BACKDROP_OUT = 'public/assets/ghost-patrol/backdrop.webp';
+const BOSSES_OUT = 'public/assets/ghost-patrol/bosses.webp';
+
+/**
+ * Boss and pickup animation sheets. Each is a grid of frames; rows are found by looking
+ * for clear horizontal space rather than assuming an even pitch, because the sheets are
+ * not evenly spaced and one carries a rule line between its two characters.
+ *
+ * The Scoleri brothers are packed as ONE group of sixteen frames (the tall one's eight,
+ * then the fat one's) so they share a single scale — scaled separately, the short brother
+ * would come out as tall as his brother.
+ */
+const BOSS_CELL = { w: 224, h: 252 };
+const PICKUP_CELL = { w: 96, h: 96 };
+const PICKUP_SHEET = { name: 'pickups', file: 'powerups', cols: 4, rows: 3, cell: PICKUP_CELL };
+const BOSS_SHEETS = [
+  { name: 'staypuft', file: 'staypuffed', cols: 4, rows: 2, cell: BOSS_CELL },
+  { name: 'terrordog', file: 'terror-dog', cols: 4, rows: 2, cell: BOSS_CELL },
+  { name: 'scoleri', file: 'scoleri', cols: 4, rows: 4, cell: BOSS_CELL },
+  { name: 'slime', file: 'slime-monster', cols: 4, rows: 2, cell: BOSS_CELL, subjectOnlyFrames: [5] },
+  { name: 'garaka', file: 'garaka', cols: 4, rows: 2, cell: BOSS_CELL },
+];
 
 // Cells are sized for the largest the game ever draws a sprite: a 2x device-pixel-ratio
 // screen at the widest layout, with a little headroom.
@@ -28,7 +49,8 @@ const WIDTH = 1024;
 const TRAP_CLOSED_Y = CAR.h + GHOST.h * GHOST.rows;
 const TRAP_OPEN_Y = TRAP_CLOSED_Y + TRAP.h;
 const SMOKE_Y = TRAP_OPEN_Y + TRAP.h;
-const HEIGHT = SMOKE_Y + SMOKE.h;
+const PICKUP_Y = SMOKE_Y + SMOKE.h;
+const HEIGHT = PICKUP_Y + PICKUP_CELL.h * 3;
 
 // Hand-picked effect sprites from the first sheet's two proton-beam bands. These are
 // single art assets rather than a grid, so they are addressed by explicit source
@@ -175,6 +197,143 @@ function sprites(all, minPixels, reach) {
   }
   const rowOf = (c) => Math.round((c.y + c.h / 2) / 180);
   return found.sort((a, b) => rowOf(a) - rowOf(b) || a.x - b.x);
+}
+
+/** Median of a short list, used to pick a row's shared baseline over an odd frame out. */
+const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+
+/**
+ * Read one animation sheet into frames. The window around each frame takes the soft glow,
+ * but the anchor that positions it follows only solid pixels, so a growing plume or
+ * shockwave cannot drag the sprite around between frames.
+ */
+async function readSheet(sheet) {
+  const { data, info } = await sharp(`art/ghost-patrol/${sheet.file}-source.png`).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: W, height: H, channels: C } = info;
+  const alpha = (x, y) => data[(y * W + x) * C + 3];
+
+  const occupied = [];
+  for (let y = 0; y < H; y++) { let n = 0; for (let x = 0; x < W; x += 2) if (alpha(x, y) > 24) n++; occupied.push(n); }
+  let bands = []; let start = null, gap = 0;
+  for (let y = 0; y < H; y++) {
+    if (occupied[y] > 0) { if (start === null) start = y; gap = 0; }
+    else if (start !== null) { gap++; if (gap > 4) { bands.push([start, y - gap]); start = null; } }
+  }
+  if (start !== null) bands.push([start, H - 1 - gap]);
+  // A rule line between rows is far too thin to be a row of sprites.
+  bands = bands.filter(([t, b]) => b - t > 40);
+  // Glow can bridge two rows into one band. Split the tallest until the count is right,
+  // cutting at the emptiest scanline near its middle.
+  while (bands.length < sheet.rows) {
+    let index = 0;
+    for (let i = 1; i < bands.length; i++) if (bands[i][1] - bands[i][0] > bands[index][1] - bands[index][0]) index = i;
+    const [top, bottom] = bands[index];
+    const from = Math.round(top + (bottom - top) * 0.3), to = Math.round(top + (bottom - top) * 0.7);
+    let cut = from;
+    for (let y = from; y <= to; y++) if (occupied[y] < occupied[cut]) cut = y;
+    bands.splice(index, 1, [top, cut - 1], [cut + 1, bottom]);
+  }
+  if (bands.length !== sheet.rows) throw new Error(`${sheet.file}: expected ${sheet.rows} rows, found ${bands.length}`);
+
+  const frames = [];
+  for (const [top, bottom] of bands) {
+    const cellW = W / sheet.cols;
+    const row = [];
+    for (let c = 0; c < sheet.cols; c++) {
+      const x0 = Math.round(c * cellW), x1 = Math.round((c + 1) * cellW);
+      // Label this cell's blobs. Art that overflows its column — a zap bolt shooting
+      // sideways — leaves a sliver in the neighbour's cell, so only the subject and the
+      // bits close to it are kept; anything stranded further off is dropped.
+      const local = new Map(), blobs = [], stack = [];
+      for (let sy = top; sy <= bottom; sy++) for (let sx = x0; sx < x1; sx++) {
+        const key = sy * W + sx;
+        if (local.has(key) || alpha(sx, sy) <= 24) continue;
+        const id = blobs.length;
+        let la = sx, lb = sx, lt = sy, ld = sy, n = 0;
+        local.set(key, id); stack.push(key);
+        while (stack.length) {
+          const i = stack.pop(), x = i % W, y = (i / W) | 0; n++;
+          if (x < la) la = x; if (x > lb) lb = x; if (y < lt) lt = y; if (y > ld) ld = y;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx, ny = y + dy;
+            if (nx < x0 || ny < top || nx >= x1 || ny > bottom) continue;
+            const nk = ny * W + nx;
+            if (!local.has(nk) && alpha(nx, ny) > 24) { local.set(nk, id); stack.push(nk); }
+          }
+        }
+        blobs.push({ id, x: la, y: lt, w: lb - la + 1, h: ld - lt + 1, n });
+      }
+      if (!blobs.length) throw new Error(`${sheet.file}: empty frame at column ${c}`);
+      const subject = blobs.reduce((best, blob) => (blob.n > best.n ? blob : best));
+      const subjectOnly = sheet.subjectOnlyFrames?.includes(frames.length + c);
+      const keep = new Set(blobs.filter((blob) => blob === subject || (!subjectOnly && boxGap(blob, subject) <= 30)).map((blob) => blob.id));
+      let a = 1e9, b = -1, t = 1e9, d = -1, sa = 1e9, sb = -1, sd = -1;
+      for (let y = top; y <= bottom; y++) for (let x = x0; x < x1; x++) {
+        if (!keep.has(local.get(y * W + x))) continue;
+        const value = alpha(x, y);
+        if (value > 24) { if (x < a) a = x; if (x > b) b = x; if (y < t) t = y; if (y > d) d = y; }
+        if (value > 200) { if (x < sa) sa = x; if (x > sb) sb = x; if (y > sd) sd = y; }
+      }
+      // Raw RGBA for just this subject, so a dropped sliver cannot reappear on extract.
+      const fw = b - a + 1, fh = d - t + 1;
+      const pixels = Buffer.alloc(fw * fh * 4);
+      for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+        const src = ((t + y) * W + (a + x)) * C, dst = (y * fw + x) * 4;
+        pixels[dst] = data[src]; pixels[dst + 1] = data[src + 1]; pixels[dst + 2] = data[src + 2];
+        pixels[dst + 3] = keep.has(local.get((t + y) * W + (a + x))) ? data[src + 3] : 0;
+      }
+      row.push({ x: a, y: t, w: fw, h: fh, pixels, foot: sd < 0 ? d : sd, mid: sb < 0 ? (a + b) / 2 : (sa + sb) / 2 });
+    }
+    // Frames in a row share one baseline; an odd frame out is the effect, not the subject.
+    const baseline = median(row.map((f) => f.foot));
+    for (const frame of row) frames.push({ ...frame, baseline });
+    row.length = 0;
+  }
+  return { frames, file: sheet.file };
+}
+
+/** Scale a sheet's frames to its cell and lay them out, anchored so nothing jitters. */
+async function packSheet(sheet, originY) {
+  const { frames } = await readSheet(sheet);
+  const scale = Math.min(...frames.map((f) => Math.min(sheet.cell.w / f.w, sheet.cell.h / f.h)));
+  // Room at the bottom for any frame that hangs below its row's shared baseline.
+  const overhang = Math.max(0, ...frames.map((f) => (f.y + f.h - f.baseline) * scale));
+  return Promise.all(frames.map(async (frame, index) => {
+    const w = Math.max(1, Math.round(frame.w * scale)), h = Math.max(1, Math.round(frame.h * scale));
+    const input = await sharp(frame.pixels, { raw: { width: frame.w, height: frame.h, channels: 4 } })
+      .resize(w, h, { kernel: 'lanczos3', fit: 'fill' }).png().toBuffer();
+    const column = index % sheet.cols, row = Math.floor(index / sheet.cols);
+    const cellX = column * sheet.cell.w, cellY = originY + row * sheet.cell.h;
+    const footFromTop = (frame.baseline - frame.y) * scale;
+    // Centre on the body and sit on the row's baseline, but never let a lopsided frame
+    // (a zap bolt shooting sideways, say) hang outside its cell and get sliced off.
+    const clamp = (value, limit) => Math.max(0, Math.min(limit, value));
+    return {
+      input,
+      left: cellX + Math.round(clamp(sheet.cell.w / 2 - (frame.mid - frame.x) * scale, sheet.cell.w - w)),
+      top: cellY + Math.round(clamp(sheet.cell.h - overhang - footFromTop, sheet.cell.h - h)),
+    };
+  }));
+}
+
+async function buildBosses() {
+  const layers = [];
+  let y = 0;
+  const map = [];
+  for (const sheet of BOSS_SHEETS) {
+    layers.push(...await packSheet(sheet, y));
+    map.push({ name: sheet.name, y, rows: sheet.rows, cols: sheet.cols, cell: sheet.cell });
+    y += sheet.rows * sheet.cell.h;
+  }
+  const width = BOSS_CELL.w * 4;
+  await sharp({ create: { width, height: y, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite(layers)
+    .webp({ quality: 82, effort: 6 })
+    .toFile(BOSSES_OUT);
+  console.log(`${BOSSES_OUT}  ${width}x${y}`);
+  for (const entry of map) {
+    console.log(`  ${entry.name.padEnd(10)} y ${String(entry.y).padStart(4)}  ${entry.cols}x${entry.rows} @ ${entry.cell.w}x${entry.cell.h}`);
+  }
 }
 
 async function main() {
@@ -343,6 +502,7 @@ async function main() {
     ...await packTrap(trapLayers(TRAP_ROWS.closed, TRAP_CLOSED_Y), TRAP),
     ...await packTrap(trapLayers(TRAP_ROWS.open, TRAP_OPEN_Y), TRAP),
     ...await pack(smoke, SMOKE, 0, SMOKE_Y, SMOKE.frames, 'bottom'),
+    ...await packSheet(PICKUP_SHEET, PICKUP_Y),
   ];
 
   await mkdir('public/assets/ghost-patrol', { recursive: true });
@@ -358,8 +518,10 @@ async function main() {
   console.log(`  ghosts ${ghosts.length} @ ${GHOST.w}x${GHOST.h}`);
   console.log(`  trap   ${TRAP.frames} closed + ${TRAP.frames} open @ ${TRAP.w}x${TRAP.h} (scale ${TRAP_SCALE})`);
   console.log(`  smoke  ${smoke.length} @ ${SMOKE.w}x${SMOKE.h}`);
+  console.log(`  pickup 12 @ ${PICKUP_CELL.w}x${PICKUP_CELL.h} at y ${PICKUP_Y}`);
 
   await buildBackdrop();
+  await buildBosses();
 }
 
 async function buildBackdrop() {

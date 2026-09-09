@@ -1,10 +1,40 @@
-type Ghost = { x: number; y: number; phase: number; health: number; speed: number; appearance: number };
+type Ghost = {
+  x: number; y: number; phase: number; health: number; speed: number; appearance: number;
+  /** Seconds since this ghost arrived; every flight path is a function of its own age. */
+  age: number;
+  /** Traps needed to put it away. Ordinary ghosts go down in one; a boss takes several. */
+  stamina: number;
+  boss?: BossHandle;
+};
 type Spark = { x: number; y: number; vx: number; vy: number; life: number; max: number; frame: number; size: number };
 type Mode = 'ready' | 'playing' | 'paused' | 'over';
 
+/**
+ * Occasional pickups that drift across the street. Catching one with the stream is a
+ * release valve for the pack's heat, which is otherwise the thing that limits you.
+ *   vent       - dumps all heat and cancels a cooldown outright
+ *   overcharge - the pack stops building heat at all for a while
+ *   slowmo     - every ghost on the street drops to half pace
+ */
+type PickupKind = 'vent' | 'overcharge' | 'slowmo';
+type Pickup = { x: number; y: number; phase: number; kind: PickupKind };
+const PICKUPS: Record<PickupKind, { colour: string; label: string; seconds: number }> = {
+  vent: { colour: '#38bdf8', label: 'Pack vented', seconds: 0 },
+  overcharge: { colour: '#f59e0b', label: 'Overcharged', seconds: 10 },
+  slowmo: { colour: '#a78bfa', label: 'Slow motion', seconds: 6 },
+};
+const PICKUP_EVERY: [number, number] = [16, 26];
+const PICKUP_RADIUS = 15;
+
 /** The trap sequence, from rolling out under the Ecto-1 to fading away with its catch. */
 type TrapPhase = 'roll' | 'open' | 'suck' | 'fade';
-type Trap = { phase: TrapPhase; t: number; fromX: number; x: number; appearance: number; size: number; ghostY: number };
+type Trap = {
+  phase: TrapPhase; t: number; fromX: number; x: number; size: number; ghostY: number; partial?: boolean;
+  held?: Ghost;
+  /** Which sprite the trap is holding. Bosses all share one ghost-atlas appearance, so
+   *  without the boss sheet recorded here every one of them was swallowed as Stay Puft. */
+  appearance: number; sprite?: BossSprite;
+};
 const TRAP_PHASES: { phase: TrapPhase; seconds: number }[] = [
   { phase: 'roll', seconds: 0.5 },
   { phase: 'open', seconds: 0.45 },
@@ -18,7 +48,7 @@ const TRAP_PHASES: { phase: TrapPhase; seconds: number }[] = [
  */
 export const ATLAS = {
   width: 1024,
-  height: 1112,
+  height: 1400,
   car: { x: 0, y: 0, w: 512, h: 200 },
   burst: { x: 512, y: 0, w: 192, h: 192 },
   spark: { x: 704, y: 0, w: 48, h: 48, frames: 4 },
@@ -26,7 +56,28 @@ export const ATLAS = {
   trapClosed: { x: 0, y: 776, w: 160, h: 132, frames: 6 },
   trapOpen: { x: 0, y: 908, w: 160, h: 132, frames: 6 },
   smoke: { x: 0, y: 1040, w: 96, h: 72, frames: 8 },
+  pickup: { x: 0, y: 1112, w: 96, h: 96, cols: 4, frames: 4 },
 };
+
+/**
+ * Geometry of public/assets/ghost-patrol/bosses.webp. Fetched lazily when a run starts:
+ * it is by far the heaviest asset and nobody who only glances at the footer needs it.
+ * Every group is 8 frames on a 4-wide grid — a four-frame approach loop on the top row,
+ * then attack, flinch and two dazed frames on the second.
+ */
+export const BOSSES = {
+  width: 896,
+  height: 3024,
+  cell: { w: 224, h: 252, cols: 4 },
+  staypuft: { y: 0 },
+  terrordog: { y: 504 },
+  scoleriTall: { y: 1008 },
+  scoleriFat: { y: 1512 },
+  slime: { y: 2016 },
+  garaka: { y: 2520 },
+};
+type BossSprite = 'staypuft' | 'terrordog' | 'scoleriTall' | 'scoleriFat' | 'slime' | 'garaka';
+const BOSS_FRAME = { attack: 4, flinch: 5, dazed: 6 };
 
 /**
  * Geometry of public/assets/ghost-patrol/backdrop.webp, also packed by
@@ -47,20 +98,31 @@ const BACKDROP_SCALE = 0.965;
  * `weight` how often it turns up, and `from` keeps the nastiest ones out of the early
  * levels so a run starts gently and escalates.
  */
-type Trait = { speed: number; grip: number; bob: number; points: number; scale: number; weight: number; from: number };
+/**
+ * How a ghost flies in. Speed and size alone made every ghost read the same, so the
+ * shape of the approach is what tells them apart now.
+ *   drift  - the classic bob, straight down the street
+ *   weave  - wide, slow S-curves across most of the sky
+ *   dive   - starts high and drops onto the car's firing line as it closes
+ *   swoop  - falls hard for a beat, then flattens out and holds the line
+ *   charge - surges forward in bursts with a pause between each
+ *   feint  - hangs high, then drops late and low
+ */
+type Path = 'drift' | 'weave' | 'dive' | 'swoop' | 'charge' | 'feint';
+type Trait = { speed: number; grip: number; bob: number; points: number; scale: number; weight: number; from: number; path: Path };
 const TRAITS: Trait[] = [
-  { speed: 1.00, grip: 1.00, bob: 1.0, points: 1, scale: 1.05, weight: 10, from: 1 },  // 0  Slimer
-  { speed: 1.30, grip: 0.85, bob: 1.0, points: 2, scale: 0.95, weight: 9, from: 1 },   // 1  blue screamer
-  { speed: 1.00, grip: 1.00, bob: 1.3, points: 1, scale: 1.00, weight: 10, from: 1 },  // 2  pink wailer
-  { speed: 1.25, grip: 0.95, bob: 0.8, points: 2, scale: 0.95, weight: 7, from: 2 },   // 3  flame demon
-  { speed: 0.90, grip: 1.55, bob: 0.9, points: 3, scale: 1.05, weight: 6, from: 3 },   // 4  violet fiend
-  { speed: 1.05, grip: 1.00, bob: 1.1, points: 1, scale: 0.95, weight: 10, from: 1 },  // 5  gold howler
-  { speed: 1.15, grip: 1.05, bob: 2.2, points: 2, scale: 1.00, weight: 7, from: 2 },   // 6  banshee, weaves hard
-  { speed: 1.45, grip: 0.70, bob: 1.0, points: 2, scale: 0.90, weight: 8, from: 1 },   // 7  classic sheet
-  { speed: 0.55, grip: 2.40, bob: 0.35, points: 5, scale: 1.30, weight: 2, from: 6 },  // 8  Stay Puft, a slow wall
-  { speed: 1.20, grip: 1.60, bob: 0.9, points: 4, scale: 1.10, weight: 3, from: 5 },   // 9  reaper
-  { speed: 0.95, grip: 1.10, bob: 1.4, points: 1, scale: 1.00, weight: 8, from: 1 },   // 10 slime drip
-  { speed: 1.40, grip: 1.15, bob: 1.0, points: 3, scale: 0.95, weight: 4, from: 4 },   // 11 fire skull
+  { speed: 1.00, grip: 1.00, bob: 1.0, points: 1, scale: 1.05, weight: 10, from: 1, path: 'drift' },  // 0  Slimer
+  { speed: 1.30, grip: 0.85, bob: 1.0, points: 2, scale: 0.95, weight: 9, from: 1, path: 'dive' },   // 1  blue screamer
+  { speed: 1.00, grip: 1.00, bob: 1.3, points: 1, scale: 1.00, weight: 10, from: 1, path: 'drift' },  // 2  pink wailer
+  { speed: 1.25, grip: 0.95, bob: 0.8, points: 2, scale: 0.95, weight: 7, from: 2, path: 'charge' },   // 3  flame demon
+  { speed: 0.90, grip: 1.55, bob: 0.9, points: 3, scale: 1.05, weight: 6, from: 3, path: 'drift' },   // 4  violet fiend
+  { speed: 1.05, grip: 1.00, bob: 1.1, points: 1, scale: 0.95, weight: 10, from: 1, path: 'drift' },  // 5  gold howler
+  { speed: 1.15, grip: 1.05, bob: 2.2, points: 2, scale: 1.00, weight: 7, from: 2, path: 'weave' },   // 6  banshee, weaves hard
+  { speed: 1.45, grip: 0.70, bob: 1.0, points: 2, scale: 0.90, weight: 8, from: 1, path: 'feint' },   // 7  classic sheet
+  { speed: 0.55, grip: 2.40, bob: 0.35, points: 5, scale: 1.30, weight: 2, from: 6, path: 'drift' },  // 8  Stay Puft, a slow wall
+  { speed: 1.20, grip: 1.60, bob: 0.9, points: 4, scale: 1.10, weight: 3, from: 5, path: 'swoop' },   // 9  reaper
+  { speed: 0.95, grip: 1.10, bob: 1.4, points: 1, scale: 1.00, weight: 8, from: 1, path: 'drift' },   // 10 slime drip
+  { speed: 1.40, grip: 1.15, bob: 1.0, points: 3, scale: 0.95, weight: 4, from: 4, path: 'charge' },   // 11 fire skull
 ];
 
 type Palette = {
@@ -85,6 +147,25 @@ const CAPTURE_SECONDS = 0.65;
 const QUOTA_BASE = 4;
 const SPEED_PER_LEVEL = 0.14;
 const INTERLUDE_SECONDS = 1.8;
+const BOSS_APPEARANCE = 8;
+
+/**
+ * The bosses available at the end of each wave. `size` is the drawn width, `y`
+ * the height it flies at, and `mate` marks a boss that arrives as a pair.
+ */
+type BossSpec = {
+  name: string; sprite: BossSprite; mate?: BossSprite; mateY?: number;
+  stamina: number; speed: number; size: number; y: number; path: Path; rise?: boolean;
+};
+export const BOSS_ROSTER: BossSpec[] = [
+  { name: 'Stay Puft', sprite: 'staypuft', stamina: 3, speed: 0.80, size: 150, y: 116, path: 'drift' },
+  { name: 'Terror Dog', sprite: 'terrordog', stamina: 3, speed: 1.30, size: 132, y: 186, path: 'charge' },
+  { name: 'The Scoleri Brothers', sprite: 'scoleriTall', mate: 'scoleriFat', mateY: 190, stamina: 2, speed: 0.70, size: 124, y: 80, path: 'drift' },
+  // Its four approach frames are a rise out of the road, so they play once, not on a loop.
+  { name: 'Slime Serpent', sprite: 'slime', stamina: 3, speed: 0.75, size: 150, y: 176, path: 'drift', rise: true },
+  { name: 'Garaka', sprite: 'garaka', stamina: 3, speed: 0.85, size: 150, y: 132, path: 'weave' },
+];
+type BossHandle = { spec: BossSpec; sprite: BossSprite; roar: number };
 /** The proton pack cooks if you lean on the trigger; heat bleeds off when you let go. */
 const OVERHEAT_SECONDS = 5;
 const COOLDOWN_SECONDS = 1;
@@ -97,6 +178,9 @@ const STUN_SECONDS = 2.5;
 const GROUND = 259;
 const TRAP_WIDTH = 84;
 const BEST_KEY = 'ghost-patrol-best';
+const RUNS_KEY = 'ghost-patrol-runs';
+const RUNS_KEPT = 5;
+type Run = { score: number; level: number; at: number };
 
 export class GhostPatrol extends HTMLElement {
   private canvas!: HTMLCanvasElement;
@@ -105,8 +189,13 @@ export class GhostPatrol extends HTMLElement {
   private startButton!: HTMLButtonElement;
   private atlas = new Image();
   private backdrop = new Image();
+  private bosses = new Image();
+  private bossesReady = false;
+  private bossesAsked = false;
+  private lastTarget?: Ghost;
   private ready = false;
   private mode: Mode = 'ready';
+  private bossTesting = false;
   private abort = new AbortController();
   private observer?: IntersectionObserver;
   private resizeObserver?: ResizeObserver;
@@ -120,9 +209,11 @@ export class GhostPatrol extends HTMLElement {
   private caught = 0;
   private streak = 0;
   private level = 1;
+  private activeBoss?: BossSpec;
   private trapped = 0;
   private interlude = 0;
   private levelBanner?: HTMLElement;
+  private runs: Run[] = [];
   private best = 0;
   private lives = 3;
   private spawnIn = 0;
@@ -137,6 +228,10 @@ export class GhostPatrol extends HTMLElement {
   private heat = 0;
   private coolFor = 0;
   private puffIn = 0;
+  private pickups: Pickup[] = [];
+  private pickupIn = PICKUP_EVERY[0];
+  private overchargeFor = 0;
+  private slowFor = 0;
   private trap?: Trap;
   private pending?: Ghost;
   private stunFor = 0;
@@ -153,6 +248,7 @@ export class GhostPatrol extends HTMLElement {
     this.ctx = context;
     try {
       this.best = Math.max(0, Number(localStorage.getItem(BEST_KEY)) || 0);
+      this.runs = this.readRuns();
     } catch { /* Storage is optional. */ }
     this.dark = document.documentElement.classList.contains('dark');
     this.updateHud();
@@ -162,8 +258,13 @@ export class GhostPatrol extends HTMLElement {
     this.trapButton = (this.querySelector('.trap') as HTMLButtonElement | null) ?? undefined;
     this.levelBanner = (this.querySelector('.level-up') as HTMLElement | null) ?? undefined;
     this.trapButton?.addEventListener('click', () => this.trapNow(), { signal });
+    this.querySelector('.share')?.addEventListener('click', () => void this.copyResult(), { signal });
     this.canvas.addEventListener('keydown', (event) => {
       const key = event.key.toLowerCase();
+      if (!event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey && this.testBoss(key)) {
+        event.preventDefault();
+        return;
+      }
       if (key === 'escape') { event.preventDefault(); this.pause(); return; }
       if (key === 't' || key === 'enter') { event.preventDefault(); this.trapNow(); return; }
       if (!['arrowup', 'arrowdown', 'w', 's', ' '].includes(key) || this.mode !== 'playing') return;
@@ -233,6 +334,53 @@ export class GhostPatrol extends HTMLElement {
     }
   }
 
+  /** The local top five. Anything malformed in storage is thrown away, not trusted. */
+  private readRuns(): Run[] {
+    try {
+      const raw = JSON.parse(localStorage.getItem(RUNS_KEY) || '[]');
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .filter((run): run is Run => !!run && Number.isFinite(run.score) && Number.isFinite(run.level))
+        .map((run) => ({ score: Math.max(0, Math.floor(run.score)), level: Math.max(1, Math.floor(run.level)), at: Number(run.at) || 0 }))
+        .sort((a, b) => b.score - a.score || b.level - a.level)
+        .slice(0, RUNS_KEPT);
+    } catch {
+      return [];
+    }
+  }
+
+  private recordRun() {
+    this.runs = [...this.runs, { score: this.score, level: this.level, at: Date.now() }]
+      .sort((a, b) => b.score - a.score || b.level - a.level)
+      .slice(0, RUNS_KEPT);
+    try { localStorage.setItem(RUNS_KEY, JSON.stringify(this.runs)); } catch { /* Optional. */ }
+    const list = this.querySelector('[data-runs]');
+    if (!list) return;
+    list.textContent = '';
+    for (const run of this.runs) {
+      const item = document.createElement('li');
+      item.textContent = `${run.score} pts · level ${run.level}`;
+      if (run.score === this.score && run.level === this.level) item.setAttribute('data-latest', '');
+      list.appendChild(item);
+    }
+    (list as HTMLElement).hidden = this.runs.length < 2;
+  }
+
+  /** Puts the run and a link back to the game on the clipboard. */
+  private async copyResult() {
+    const button = this.querySelector('.share') as HTMLButtonElement | null;
+    if (!button) return;
+    const link = `${location.origin}${location.pathname}#ghost-patrol`;
+    const text = `Ghost Patrol: ${this.score} points, level ${this.level}, ${this.caught} ghost${this.caught === 1 ? '' : 's'} trapped. ${link}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = 'Copied!';
+    } catch {
+      button.textContent = 'Copy failed';
+    }
+    window.setTimeout(() => { button.textContent = 'Copy result'; }, 2000);
+  }
+
   private text(selector: string, value: string) {
     const element = this.querySelector(selector)!;
     if (element.textContent !== value) element.textContent = value;
@@ -261,7 +409,9 @@ export class GhostPatrol extends HTMLElement {
     return Math.max(0, Math.min(1, (this.heat - HEAT_WARN_AT) / (OVERHEAT_SECONDS - HEAT_WARN_AT)));
   }
   private get multiplier() { return Math.min(4, 1 + Math.floor(this.streak / 3)); }
-  private get quota() { return QUOTA_BASE + this.level; }
+  private get isBossLevel() { return this.activeBoss !== undefined; }
+  private get bossSpec() { return this.activeBoss ?? BOSS_ROSTER[0]; }
+  private get quota() { return this.isBossLevel ? (this.bossSpec.mate ? 2 : 1) : QUOTA_BASE + this.level; }
   /**
    * How long a ghost takes to cross the street. A narrow screen gives it far less ground
    * to cover, so a fixed crossing time would leave phone ghosts crawling; this keeps the
@@ -271,7 +421,7 @@ export class GhostPatrol extends HTMLElement {
     return 4.6 + 2.6 * Math.min(1, Math.max(0, (this.width - 360) / 440));
   }
   private get levelSpeed() { return 1 + (this.level - 1) * SPEED_PER_LEVEL; }
-  private ghostSize(ghost: Ghost) { return 80 * (TRAITS[ghost.appearance]?.scale ?? 1); }
+  private ghostSize(ghost: Ghost) { return ghost.boss ? ghost.boss.spec.size : 80 * (TRAITS[ghost.appearance]?.scale ?? 1); }
 
   private aim(event: PointerEvent) {
     const rect = this.canvas.getBoundingClientRect();
@@ -298,14 +448,37 @@ export class GhostPatrol extends HTMLElement {
     return eligible.length ? eligible[eligible.length - 1].index : 0;
   }
 
+  /** The boss sheet is heavy, so it is only fetched once someone actually plays. */
+  private loadBosses() {
+    if (this.bossesAsked) return;
+    this.bossesAsked = true;
+    this.bosses.src = '/assets/ghost-patrol/bosses.webp';
+    this.bosses.decode().then(() => { this.bossesReady = true; }).catch(() => { /* Bosses fall back to the ghost sprite. */ });
+  }
+
+  private testBoss(key: string) {
+    if (!this.ready || !this.hasAttribute('data-boss-testing') || !/^[1-9]$/.test(key) || Number(key) > BOSS_ROSTER.length) return false;
+    this.stop();
+    this.mode = 'ready';
+    this.start();
+    this.bossTesting = true;
+    this.activeBoss = BOSS_ROSTER[Number(key) - 1];
+    this.updateHud();
+    this.text('.dispatch', `Boss test: ${this.bossSpec.name}`);
+    return true;
+  }
+
   private start() {
     if (!this.ready) return;
+    this.loadBosses();
     if (this.mode !== 'paused') {
+      this.bossTesting = false;
       this.elapsed = 0;
       this.score = 0;
       this.caught = 0;
       this.streak = 0;
       this.level = 1;
+      this.activeBoss = undefined;
       this.trapped = 0;
       this.interlude = 0;
       this.lives = 3;
@@ -314,6 +487,10 @@ export class GhostPatrol extends HTMLElement {
       this.ghosts = [];
       this.sparks = [];
       this.puffs = [];
+      this.pickups = [];
+      this.pickupIn = PICKUP_EVERY[0];
+      this.overchargeFor = 0;
+      this.slowFor = 0;
       this.heat = 0;
       this.coolFor = 0;
       this.trap = undefined;
@@ -323,6 +500,10 @@ export class GhostPatrol extends HTMLElement {
     }
     this.mode = 'playing';
     this.setAttribute('data-playing', '');
+    const share = this.querySelector('.share') as HTMLElement | null;
+    if (share) share.hidden = true;
+    const runs = this.querySelector('[data-runs]') as HTMLElement | null;
+    if (runs) runs.hidden = true;
     this.overlay.hidden = true;
     (this.querySelector('.mission') as HTMLElement).hidden = false;
     this.text('.dispatch', this.pending ? 'Ghost stunned — hit TRAP!' : 'Patrol in progress');
@@ -364,9 +545,11 @@ export class GhostPatrol extends HTMLElement {
 
   private finish() {
     this.mode = 'over';
-    const record = this.score > this.best;
-    this.best = Math.max(this.best, this.score);
-    try { localStorage.setItem(BEST_KEY, String(this.best)); } catch { /* Play also works without storage. */ }
+    const record = !this.bossTesting && this.score > this.best;
+    if (!this.bossTesting) {
+      this.best = Math.max(this.best, this.score);
+      try { localStorage.setItem(BEST_KEY, String(this.best)); } catch { /* Play also works without storage. */ }
+    }
     this.stop();
     this.updateHud();
     const ghosts = `${this.caught} ghost${this.caught === 1 ? '' : 's'}`;
@@ -377,6 +560,9 @@ export class GhostPatrol extends HTMLElement {
       'Play again →',
     );
     this.text('.dispatch', `Run over on level ${this.level}`);
+    if (!this.bossTesting) this.recordRun();
+    const share = this.querySelector('.share') as HTMLButtonElement | null;
+    if (share) { share.hidden = this.bossTesting; share.textContent = 'Copy result'; }
     this.startButton.focus({ preventScroll: true });
   }
 
@@ -384,8 +570,15 @@ export class GhostPatrol extends HTMLElement {
     this.text('[data-score]', String(this.score).padStart(2, '0'));
     this.text('[data-best]', String(this.best).padStart(2, '0'));
     this.text('[data-level]', `LEVEL ${this.level}`);
-    this.text('[data-quota]', `${this.trapped}/${this.quota} trapped`);
+    this.text('[data-quota]', this.isBossLevel ? 'BOSS' : `${this.trapped}/${this.quota} trapped`);
     this.text('[data-lives]', `${this.lives} escape${this.lives === 1 ? '' : 's'} left`);
+    const boost = this.querySelector('[data-boost]') as HTMLElement | null;
+    if (boost) {
+      const active = this.overchargeFor > 0 ? `OVERCHARGE ${Math.ceil(this.overchargeFor)}s`
+        : this.slowFor > 0 ? `SLOW-MO ${Math.ceil(this.slowFor)}s` : '';
+      boost.textContent = active;
+      boost.hidden = !active;
+    }
     const combo = this.querySelector('[data-combo]') as HTMLElement | null;
     if (combo) {
       combo.textContent = `${this.multiplier}x`;
@@ -421,8 +614,10 @@ export class GhostPatrol extends HTMLElement {
       this.coolFor = Math.max(0, this.coolFor - dt);
       if (this.coolFor === 0) { this.heat = 0; this.text('.dispatch', 'Pack back online'); }
     }
+    this.overchargeFor = Math.max(0, this.overchargeFor - dt);
+    this.slowFor = Math.max(0, this.slowFor - dt);
     let firing = this.firing;
-    if (firing) {
+    if (firing && this.overchargeFor <= 0) {
       this.heat += dt;
       if (this.heat >= OVERHEAT_SECONDS) {
         this.heat = OVERHEAT_SECONDS;
@@ -454,25 +649,66 @@ export class GhostPatrol extends HTMLElement {
       puff.life -= dt;
     }
     this.puffs = this.puffs.filter((puff) => puff.life > 0);
+    this.pickupIn -= dt;
+    if (this.pickupIn <= 0) {
+      const kinds = Object.keys(PICKUPS) as PickupKind[];
+      this.pickups.push({
+        x: this.width + 20,
+        y: 60 + Math.random() * 110,
+        phase: Math.random() * 6,
+        kind: kinds[Math.floor(Math.random() * kinds.length)],
+      });
+      this.pickupIn = PICKUP_EVERY[0] + Math.random() * (PICKUP_EVERY[1] - PICKUP_EVERY[0]);
+    }
+    if (this.pickups.length) {
+      const beam = firing ? this.beamGeometry() : undefined;
+      for (const pickup of this.pickups) pickup.x -= 46 * dt;
+      this.pickups = this.pickups.filter((pickup) => {
+        if (beam && this.onBeam(pickup, beam)) { this.collect(pickup); return false; }
+        return pickup.x > -30;
+      });
+    }
     this.spawnIn -= dt;
     if (this.spawnIn <= 0) {
-      const appearance = this.pickAppearance();
       const base = (this.width - this.origin.x) / this.crossSeconds * this.levelSpeed;
-      this.ghosts.push({
-        x: this.width + 30,
-        y: 75 + Math.random() * 105,
-        phase: Math.random() * 6,
-        health: 1,
-        speed: base * TRAITS[appearance].speed,
-        appearance,
-      });
+      if (this.isBossLevel) {
+        const spec = this.bossSpec;
+        const sprites: BossSprite[] = spec.mate ? [spec.sprite, spec.mate] : [spec.sprite];
+        sprites.forEach((sprite, index) => {
+          this.ghosts.push({
+            x: this.width + 30 + index * 90,
+            y: index === 0 ? spec.y : (spec.mateY ?? spec.y + 22),
+            phase: index * 3,
+            age: 0,
+            health: 1,
+            speed: base * spec.speed,
+            appearance: BOSS_APPEARANCE,
+            stamina: spec.stamina,
+            boss: { spec, sprite, roar: 0 },
+          });
+        });
+      } else {
+        const appearance = this.pickAppearance();
+        this.ghosts.push({
+          x: this.width + 30,
+          y: 75 + Math.random() * 105,
+          phase: Math.random() * 6,
+          age: 0,
+          health: 1,
+          speed: base * TRAITS[appearance].speed,
+          appearance,
+          stamina: 1,
+        });
+      }
       // Slower than a pure shooter: each ghost costs a stun plus a trap sequence.
-      this.spawnIn = Math.max(1.0, 2.8 - (this.level - 1) * 0.2);
+      // A boss arrives alone; nothing else comes until the level is over.
+      this.spawnIn = this.isBossLevel ? Infinity : Math.max(1.0, 2.8 - (this.level - 1) * 0.2);
     }
 
     const origin = this.origin;
     const beam = firing ? this.beamGeometry() : undefined;
     const target = beam?.target;
+    this.lastTarget = target;
     // Sparks ride the length of the stream so it reads as energy, not a painted line.
     if (beam && !this.reducedMotion.matches) {
       for (let i = 0; i < 2; i++) {
@@ -500,7 +736,20 @@ export class GhostPatrol extends HTMLElement {
       const stage = TRAP_PHASES.find((p) => p.phase === this.trap!.phase)!;
       this.trap.t += dt / stage.seconds;
       if (this.trap.t >= 1) {
-        const next = TRAP_PHASES[TRAP_PHASES.indexOf(stage) + 1];
+        let next = TRAP_PHASES[TRAP_PHASES.indexOf(stage) + 1];
+        // A trap that failed to hold its catch shuts again without swallowing anything.
+        if (this.trap.partial && next?.phase === 'suck') {
+          next = TRAP_PHASES[TRAP_PHASES.indexOf(stage) + 2];
+          const ghost = this.trap.held;
+          if (ghost) {
+            ghost.age = 0;
+            ghost.x = Math.min(this.width + 20, ghost.x + 70);
+            if (ghost.boss) ghost.boss.roar = 0.9;
+            this.trap.held = undefined;
+            this.shake = 8;
+            this.text('.dispatch', `It broke the trap! ${ghost.stamina} to go`);
+          }
+        }
         if (next) { this.trap.phase = next.phase; this.trap.t = 0; }
         else {
           this.trap = undefined;
@@ -511,8 +760,10 @@ export class GhostPatrol extends HTMLElement {
     }
     for (const ghost of this.ghosts) {
       const trait = TRAITS[ghost.appearance] ?? TRAITS[0];
-      if (ghost === this.pending) continue; // Pinned: it neither advances nor recovers.
-      ghost.x -= ghost.speed * dt * (ghost === target ? 0.25 : 1);
+      if (ghost === this.pending || ghost === this.trap?.held) continue; // Pinned: it neither advances nor recovers.
+      ghost.age += dt;
+      if (ghost.boss && ghost.boss.roar > 0) ghost.boss.roar = Math.max(0, ghost.boss.roar - dt);
+      ghost.x -= ghost.speed * dt * this.paceOf(ghost) * (this.slowFor > 0 ? 0.5 : 1) * (ghost === target ? 0.25 : 1);
       ghost.health = Math.min(1, ghost.health - (ghost === target ? dt / (CAPTURE_SECONDS * trait.grip) : -dt * 0.35));
       if (ghost.health <= 0) {
         if (this.pending || this.trap) {
@@ -534,6 +785,11 @@ export class GhostPatrol extends HTMLElement {
       }
     }
     this.ghosts = this.ghosts.filter((g) => g.x >= origin.x + 12);
+    // A boss that gets past the car would otherwise leave the level unwinnable, since
+    // nothing else is ever scheduled to spawn on a boss level.
+    if (this.isBossLevel && !this.ghosts.length && !this.trap && !this.pending && this.spawnIn === Infinity) {
+      this.spawnIn = 1.5;
+    }
     for (const spark of this.sparks) {
       spark.x += spark.vx * dt; spark.y += spark.vy * dt;
       spark.vy += dt * 26; // A little gravity so sparks arc instead of drifting flat.
@@ -548,14 +804,78 @@ export class GhostPatrol extends HTMLElement {
     this.frame = requestAnimationFrame(this.tick);
   };
 
+  /** True when a pickup is sitting in the stream, which is all it takes to grab one. */
+  private onBeam(pickup: Pickup, beam: { origin: { x: number; y: number }; dx: number; dy: number; length: number }) {
+    const x = pickup.x - beam.origin.x, y = this.pickupY(pickup) - beam.origin.y;
+    const along = x * beam.dx + y * beam.dy;
+    if (along < 0 || along > beam.length + PICKUP_RADIUS) return false;
+    return Math.abs(x * beam.dy - y * beam.dx) < PICKUP_RADIUS;
+  }
+
+  private pickupY(pickup: Pickup) {
+    return this.reducedMotion.matches ? pickup.y : pickup.y + Math.sin(this.elapsed * 2 + pickup.phase) * 7;
+  }
+
+  private collect(pickup: Pickup) {
+    const spec = PICKUPS[pickup.kind];
+    if (pickup.kind === 'vent') { this.heat = 0; this.coolFor = 0; }
+    if (pickup.kind === 'overcharge') this.overchargeFor = spec.seconds;
+    if (pickup.kind === 'slowmo') this.slowFor = spec.seconds;
+    this.shake = 5;
+    const y = this.pickupY(pickup);
+    for (let i = 0; i < 12; i++) {
+      const spin = Math.random() * Math.PI * 2, speed = 40 + Math.random() * 90;
+      this.addSpark(pickup.x, y, Math.cos(spin) * speed, Math.sin(spin) * speed, 0.35, 8 + Math.random() * 6);
+    }
+    this.text('.dispatch', spec.label);
+    this.updateHud();
+  }
+
   private addSpark(x: number, y: number, vx: number, vy: number, life: number, size: number) {
     this.sparks.push({ x, y, vx, vy, life, max: life, size, frame: Math.floor(Math.random() * ATLAS.spark.frames) });
   }
 
+  /** Where a ghost sits right now, given how long it has been flying and its path. */
   private ghostY(ghost: Ghost) {
     if (this.reducedMotion.matches) return ghost.y;
-    const bob = TRAITS[ghost.appearance]?.bob ?? 1;
-    return ghost.y + Math.sin(this.elapsed * 2.5 + ghost.phase) * 9 * bob;
+    const trait = TRAITS[ghost.appearance] ?? TRAITS[0];
+    const age = ghost.age ?? 0;
+    let y = ghost.y;
+    switch (ghost.boss?.spec.path ?? trait.path) {
+      case 'weave':
+        y += Math.sin(age * 1.5 + ghost.phase) * 30 * trait.bob;
+        break;
+      case 'dive': {
+        // Closes on the car's firing line the nearer it gets, so it is easy early and
+        // awkward late.
+        const run = Math.max(1, this.width - this.origin.x);
+        const closed = Math.min(1, Math.max(0, 1 - (ghost.x - this.origin.x) / run));
+        y += (this.origin.y - 30 - ghost.y) * closed * closed + Math.sin(age * 3 + ghost.phase) * 4;
+        break;
+      }
+      case 'swoop': {
+        const fall = Math.min(1, age / 1.6);
+        y += 44 * (1 - Math.cos(fall * Math.PI)) / 2 + Math.sin(age * 2 + ghost.phase) * 5 * trait.bob;
+        break;
+      }
+      case 'feint':
+        y += Math.min(60, Math.max(0, age - 1.3) * 30) + Math.sin(age * 2.4 + ghost.phase) * 6 * trait.bob;
+        break;
+      case 'charge':
+        y += Math.sin(age * 2.2 + ghost.phase) * 7 * trait.bob;
+        break;
+      default:
+        y += Math.sin(age * 2.5 + ghost.phase) * 9 * trait.bob;
+    }
+    // Never let a path carry a ghost off the top or down into the road.
+    return Math.max(42, Math.min(228, y));
+  }
+
+  /** Chargers surge and pause; everything else holds a steady pace. */
+  private paceOf(ghost: Ghost) {
+    const trait = TRAITS[ghost.appearance] ?? TRAITS[0];
+    if ((ghost.boss?.spec.path ?? trait.path) !== 'charge' || this.reducedMotion.matches) return 1;
+    return 0.35 + 1.15 * Math.max(0, Math.sin((ghost.age ?? 0) * 2.4 + ghost.phase));
   }
 
   private beamTarget() {
@@ -563,7 +883,7 @@ export class GhostPatrol extends HTMLElement {
     const dx = Math.cos(this.angle), dy = Math.sin(this.angle);
     // Stop at the nearest ghost intersecting the beam, matching the capture logic.
     return this.ghosts.filter((ghost) => {
-      if (ghost === this.pending) return false; // Already pinned; the stream passes it by.
+      if (ghost === this.pending || ghost === this.trap?.held) return false; // Already pinned; the stream passes it by.
       const x = ghost.x - origin.x, y = this.ghostY(ghost) - origin.y;
       return x * dx + y * dy > 0 && Math.abs(x * dy - y * dx) < this.ghostSize(ghost) * 0.3;
     }).sort((a, b) => a.x - b.x)[0];
@@ -632,6 +952,35 @@ export class GhostPatrol extends HTMLElement {
     this.ctx.drawImage(this.atlas, sx, sy, sw, sh, Math.round(x), Math.round(y), w, h);
   }
 
+  /** Which of the eight boss frames fits what it is doing right now. */
+  private bossFrame(ghost: Ghost) {
+    const handle = ghost.boss!;
+    if (ghost === this.pending) return BOSS_FRAME.dazed + (Math.floor(this.elapsed * 5) % 2);
+    if (handle.roar > 0) return BOSS_FRAME.attack;
+    if (ghost === this.lastTarget) return BOSS_FRAME.flinch;
+    const age = ghost.age ?? 0;
+    // The serpent's approach frames are it rising out of the road, so they play once.
+    if (handle.spec.rise) return Math.min(3, Math.floor(age * 5));
+    return Math.floor(age * 7) % 4;
+  }
+
+  private drawBossSprite(ghost: Ghost, x: number, y: number, size: number) {
+    this.drawBossCell(ghost.boss!.sprite, this.bossFrame(ghost), x, y, size);
+  }
+
+  private drawBossCell(sprite: BossSprite, frame: number, x: number, y: number, size: number) {
+    const { cell } = BOSSES;
+    const group = BOSSES[sprite];
+    const sx = (frame % cell.cols) * cell.w, sy = group.y + Math.floor(frame / cell.cols) * cell.h;
+    const height = size * cell.h / cell.w;
+    const c = this.ctx;
+    c.save();
+    c.translate(Math.round(x), Math.round(y));
+    c.scale(-1, 1); // Same mirror as the ordinary ghosts, so it faces the car.
+    c.drawImage(this.bosses, sx, sy, cell.w, cell.h, -size / 2, -height / 2, size, height);
+    c.restore();
+  }
+
   private drawGhostSprite(appearance: number, x: number, y: number, size: number) {
     const { ghost } = ATLAS;
     const column = appearance % ghost.columns, row = Math.floor(appearance / ghost.columns);
@@ -643,6 +992,22 @@ export class GhostPatrol extends HTMLElement {
     c.scale(-1, 1);
     c.drawImage(this.atlas, ghost.x + column * ghost.w, ghost.y + row * ghost.h, ghost.w, ghost.h, -size / 2, -size / 2, size, size);
     c.restore();
+  }
+
+  private drawPickups() {
+    const c = this.ctx;
+    const { pickup } = ATLAS;
+    const rows: PickupKind[] = ['vent', 'overcharge', 'slowmo'];
+    for (const item of this.pickups) {
+      const y = this.pickupY(item);
+      const row = Math.max(0, rows.indexOf(item.kind));
+      const frame = this.reducedMotion.matches ? 0 : Math.floor(this.elapsed * 8 + item.phase) % pickup.frames;
+      const size = 40;
+      this.cell(
+        pickup.x + frame * pickup.w, pickup.y + row * pickup.h, pickup.w, pickup.h,
+        item.x - size / 2, y - size / 2, size, size,
+      );
+    }
   }
 
   /** Rolls the trap out from under the Ecto-1, opens it, and swallows the ghost. */
@@ -664,18 +1029,19 @@ export class GhostPatrol extends HTMLElement {
     c.globalAlpha = trap.phase === 'fade' ? Math.max(0, 1 - trap.t) : 1;
     this.cell(cells.x + frame * cells.w, cells.y, cells.w, cells.h, x - width / 2, GROUND - height, width, height);
     if (trap.phase !== 'fade') {
-      // The ghost hangs over the open trap, then is dragged down into the beam.
+      // Lift the catch clear of the trap before pulling it down. A ground-runner like the
+      // terror dog flies at road height, so without this it simply buries the trap.
+      const hover = Math.min(trap.ghostY, mouth - trap.size * 0.8);
+      const rise = trap.phase === 'roll' ? trap.t : 1;
+      const from = trap.ghostY + (hover - trap.ghostY) * rise;
       const suck = trap.phase === 'suck' ? trap.t : 0;
       const pull = suck * suck;
       c.globalAlpha = Math.max(0, 1 - suck * 0.9);
-      this.drawGhostSprite(
-        trap.appearance,
-        trap.x,
-        trap.ghostY + (mouth - trap.ghostY) * pull,
-        trap.size * (1 - suck * 0.82),
-      );
+      const held = from + (mouth - from) * pull, shrunk = trap.size * (1 - suck * 0.82);
+      if (trap.sprite && this.bossesReady) this.drawBossCell(trap.sprite, BOSS_FRAME.dazed, trap.x, held, shrunk);
+      else this.drawGhostSprite(trap.appearance, trap.x, held, shrunk);
     }
-    if (trap.phase === 'suck' && trap.t > 0.55) {
+    if (!trap.partial && trap.phase === 'suck' && trap.t > 0.55) {
       const flash = (trap.t - 0.55) / 0.45;
       const size = TRAP_WIDTH * (0.5 + flash * 0.8);
       const { burst } = ATLAS;
@@ -691,9 +1057,28 @@ export class GhostPatrol extends HTMLElement {
     if (!ghost || this.trap || this.mode !== 'playing') return;
     this.pending = undefined;
     this.hideTrapPrompt();
-    this.ghosts = this.ghosts.filter((g) => g !== ghost);
     const trait = TRAITS[ghost.appearance] ?? TRAITS[0];
     const multiplier = this.multiplier;
+    // A boss tears free of the first traps: the beam still costs it a life, and it comes
+    // straight back with full health for the next round.
+    const final = (ghost.stamina ?? 1) <= 1;
+    if (!final) {
+      ghost.stamina--;
+      ghost.health = 1;
+      this.score += trait.points * multiplier;
+      this.streak++;
+      this.shake = 8;
+      this.trap = {
+        phase: 'roll', t: 0, fromX: this.origin.x, x: ghost.x,
+        appearance: ghost.appearance, sprite: ghost.boss?.sprite, size: this.ghostSize(ghost), ghostY: this.ghostY(ghost),
+        partial: true, held: ghost,
+      };
+      this.text('.dispatch', 'Trap deploying!');
+      this.updateHud();
+      this.canvas.focus({ preventScroll: true });
+      return;
+    }
+    this.ghosts = this.ghosts.filter((g) => g !== ghost);
     this.score += trait.points * multiplier;
     this.caught++;
     this.trapped++;
@@ -706,7 +1091,7 @@ export class GhostPatrol extends HTMLElement {
     }
     this.trap = {
       phase: 'roll', t: 0, fromX: this.origin.x, x: ghost.x,
-      appearance: ghost.appearance, size: this.ghostSize(ghost), ghostY: y,
+      appearance: ghost.appearance, sprite: ghost.boss?.sprite, size: this.ghostSize(ghost), ghostY: y,
     };
     this.text('.dispatch', multiplier > 1 ? `Trapped! ${multiplier}x combo` : `Ghost trapped! ${this.caught} total`);
     this.updateHud();
@@ -715,9 +1100,14 @@ export class GhostPatrol extends HTMLElement {
 
   /** Clear the street, hand back an escape every third level, and speed the ghosts up. */
   private advanceLevel() {
-    this.level++;
+    if (this.activeBoss) {
+      this.level++;
+      this.activeBoss = undefined;
+      if ((this.level - 1) % 3 === 0) this.lives = Math.min(3, this.lives + 1);
+    } else {
+      this.activeBoss = BOSS_ROSTER[Math.floor(Math.random() * BOSS_ROSTER.length)];
+    }
     this.trapped = 0;
-    if ((this.level - 1) % 3 === 0) this.lives = Math.min(3, this.lives + 1);
     this.ghosts = [];
     this.pending = undefined;
     this.hideTrapPrompt();
@@ -725,14 +1115,16 @@ export class GhostPatrol extends HTMLElement {
     this.spawnIn = 0.6;
     this.showLevelBanner();
     this.updateHud();
-    this.text('.dispatch', `Level ${this.level} — they come faster now`);
+    this.text('.dispatch', this.activeBoss ? `Boss incoming: ${this.activeBoss.name}` : `Level ${this.level} — they come faster now`);
   }
 
   private showLevelBanner() {
     const banner = this.levelBanner;
     if (!banner) return;
-    this.text('[data-banner-level]', `LEVEL ${this.level}`);
-    this.text('[data-banner-note]', `Ghosts ×${this.levelSpeed.toFixed(2)} · trap ${this.quota}`);
+    this.text('[data-banner-level]', this.isBossLevel ? 'BOSS' : `LEVEL ${this.level}`);
+    this.text('[data-banner-note]', this.isBossLevel
+      ? `Level ${this.level} · ${this.bossSpec.name} · ${this.bossSpec.stamina} traps`
+      : `Ghosts ×${this.levelSpeed.toFixed(2)} · trap ${this.quota}`);
     banner.hidden = false;
   }
 
@@ -795,23 +1187,28 @@ export class GhostPatrol extends HTMLElement {
       this.drawGhostSprite(0, w < 500 ? w - 55 : w * 0.49, 125, 84);
     } else {
       for (const ghost of this.ghosts) {
+        if (ghost === this.trap?.held) continue;
         const size = this.ghostSize(ghost), y = this.ghostY(ghost);
         // A pinned ghost thrashes in place until the trap arrives.
         const shake = ghost === this.pending && !this.reducedMotion.matches ? 3 : 0;
-        this.drawGhostSprite(
-          ghost.appearance,
-          ghost.x + (Math.random() - 0.5) * shake,
-          y + (Math.random() - 0.5) * shake,
-          size,
-        );
-        if (ghost.health < 1) {
-          const barY = y + size / 2 + 4;
-          c.fillStyle = colors.meter; c.fillRect(ghost.x - 22, barY, 44, 4);
+        const dx = ghost.x + (Math.random() - 0.5) * shake, dy = y + (Math.random() - 0.5) * shake;
+        if (ghost.boss && this.bossesReady) this.drawBossSprite(ghost, dx, dy, size);
+        else this.drawGhostSprite(ghost.appearance, dx, dy, size);
+        const width = ghost.boss ? 78 : 44;
+        if (ghost.health < 1 || ghost.boss) {
+          const barY = y + size / 2 + 4, barX = ghost.x - width / 2;
+          c.fillStyle = colors.meter; c.fillRect(barX, barY, width, ghost.boss ? 6 : 4);
           c.fillStyle = ghost.health > 0.5 ? colors.meterFill : ghost.health > 0.2 ? '#fbbf24' : '#f87171';
-          c.fillRect(ghost.x - 22, barY, 44 * ghost.health, 4);
+          c.fillRect(barX, barY, width * ghost.health, ghost.boss ? 6 : 4);
+          // A boss shows one notch per trap it still has left in it.
+          if (ghost.boss) {
+            c.fillStyle = colors.meter;
+            for (let n = 1; n < (ghost.stamina ?? 1); n++) c.fillRect(barX + (width * n) / (ghost.stamina ?? 1), barY, 2, 6);
+          }
         }
       }
       this.drawTrap();
+      this.drawPickups();
     }
 
     if (this.mode === 'playing') {

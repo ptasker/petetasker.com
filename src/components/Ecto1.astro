@@ -1,4 +1,4 @@
-<ghost-patrol id="ghost-patrol" class="patrol">
+<ghost-patrol id="ghost-patrol" class="patrol" data-boss-testing={import.meta.env.DEV || undefined}>
   <section class="cabinet" aria-labelledby="patrol-title">
     <div class="dashboard">
       <div class="identity"><span class="indicator" aria-hidden="true"></span><h2 id="patrol-title">GHOST PATROL</h2><span class="edition">ARCADE / 01</span></div>
@@ -13,7 +13,11 @@
         <span class="eyebrow" data-eyebrow>OFF THE CLOCK. ON PATROL.</span>
         <h3 data-heading>Got a minute to bust some ghosts?</h3>
         <p data-message>Hold your stream to drain a ghost, then spring the trap.<br />Clear each level’s quota — they get faster every time.</p>
-        <button class="start" type="button" disabled>Loading sprites…</button>
+        <ol class="runs" data-runs hidden></ol>
+        <div class="actions">
+          <button class="start" type="button" disabled>Loading sprites…</button>
+          <button class="share" type="button" hidden>Copy result</button>
+        </div>
       </div>
       <button class="trap" type="button" hidden>TRAP! <kbd>T</kbd></button>
       <div class="level-up" hidden>
@@ -25,11 +29,12 @@
         <span data-quota>0/5 trapped</span>
         <span data-lives>3 escapes left</span>
         <span class="combo" data-combo hidden>1x</span>
+        <span class="boost" data-boost hidden></span>
         <button class="pause" type="button">Pause</button>
       </div>
     </div>
     <div class="controls">
-      <p id="patrol-help"><span class="desktop-help">↑ ↓ aim · hold SPACE to drain · T to trap</span><span class="touch-help">Hold on a ghost to drain it, then tap TRAP!</span><span class="help-tail"> · don’t let them pass!</span></p>
+      <p id="patrol-help"><span class="desktop-help">↑ ↓ aim · hold SPACE to fire · T to trap</span><span class="touch-help">Hold on a ghost to drain it, then tap TRAP!</span><span class="help-tail"> · don’t let them pass!</span></p>
       <span class="dispatch" role="status" aria-live="polite">Awaiting dispatch</span>
     </div>
   </section>
@@ -134,6 +139,13 @@
   h3 { max-width: 300px; margin: 10px 0; font-size: 27px; line-height: 1.05; font-family: 'VT323', monospace; font-weight: 400; }
   .overlay p { font-size: 12px; line-height: 1.7; color: var(--dim); margin: 0 0 18px; }
   button { cursor: pointer; font: inherit; }
+  .actions { display: flex; align-items: center; gap: 8px; }
+  .runs { margin: 0 0 12px; padding: 0; list-style: none; font-size: 11px; color: var(--dim); line-height: 1.75; }
+  .runs[hidden] { display: none; }
+  .runs li[data-latest] { color: var(--accent); }
+  .share { background: transparent; color: var(--dim); border: 1px solid var(--edge); border-radius: 4px; padding: 8px 12px; font-size: 12px; }
+  .share:hover { color: var(--ink); border-color: var(--dim); }
+  .share[hidden] { display: none; }
   .start { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent-soft); border-radius: 4px; padding: 9px 18px; font-size: 13px; }
   .start:hover { background: var(--accent-soft); }
   .start:disabled { opacity: .5; cursor: wait; }
@@ -141,6 +153,8 @@
   .mission { position: absolute; top: 12px; left: 20px; right: 20px; display: flex; align-items: center; gap: 14px; color: var(--ink); font-size: 12px; pointer-events: none; }
   .mission [data-level] { color: var(--accent); letter-spacing: .08em; }
   .combo { color: var(--accent); font-size: 14px; }
+  .boost { color: #f59e0b; font-size: 11px; letter-spacing: .08em; }
+  .boost[hidden] { display: none; }
   .pause { margin-left: auto; pointer-events: auto; border: 1px solid var(--edge); border-radius: 4px; background: var(--panel); color: var(--ink); padding: 4px 10px; }
   .controls { padding-top: 12px; padding-bottom: 12px; border-top: 1px solid var(--rule); }
   .controls p { margin: 0; }
