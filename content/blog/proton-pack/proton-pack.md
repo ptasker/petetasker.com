@@ -35,9 +35,11 @@ That last part is what this post is really about. The build was fun, but the int
 
 If you want a screen-accurate proton pack, the reference is [GPStar](https://github.com/GPStarTechnologies/GPStar-Core-Source). Their kit is excellent, and their firmware is open source. It also assumes their own controller boards and a separate audio board to play the sounds.
 
-I wanted the same behaviour on parts from my own drawer: a plain ESP32 dev board in the pack, an ESP32-C3 Super Mini in the wand, and three wires between them. No dedicated audio board. The ESP32 would read WAV files off an SD card and mix them itself.
+I wanted the same behaviour on cheap, generic parts: a plain ESP32 dev board in the pack, an ESP32-C3 Super Mini in the wand, and three wires between them. No dedicated audio board. The ESP32 would read WAV files off an SD card and mix them itself.
 
-That one decision caused most of the problems in this post. I'd make it again.
+That one decision caused most of the problems in this post.
+
+<!-- TODO: would you make it again? -->
 
 The starting point was [GBPack32](https://github.com/swbradshaw/GBPack32), and the first commit on September 11 was a single red light chasing around a ring. Six weeks later there were three firmware builds: the main pack, the wand, and a second, simpler pack.
 
@@ -53,7 +55,7 @@ And the wand:
 
 ## How I worked with AI
 
-Of the 23 commits in the original history, 18 were co-authored with **GitHub Copilot**. So this was a pairing exercise from start to finish, and it took a while to find a way of working that held up.
+Of the 23 commits in the original history, 18 were co-authored with **GitHub Copilot**. So this was a pairing exercise from start to finish.
 
 The problem with AI and hardware is simple: the assistant can't see anything. It can't hear the speaker crackle or watch a display stay dark. It will happily write firmware for a board it's imagining. I was its eyes and its test bench. It proposed, I flashed and watched, and what I saw went back in.
 
@@ -66,13 +68,15 @@ The thing that made that loop work was a notes file. The repo has a 275-line ins
 
 <!-- TODO: what you kept for yourself. Architecture? Bench debugging? Final review? -->
 
-When it came time to open-source the project I used **Claude** for the release chores: an audit of the full git history for secrets and personal details, picking a licence that was compatible with the libraries I'd used, and a README rewrite. That audit turned up a dozen places where my README no longer matched the code. The docs had drifted while the firmware moved on, and I hadn't noticed. AI as a reviewer turned out to be at least as useful as AI as an author.
+When it came time to open-source the project I used **Claude** for the release chores: an audit of the full git history for secrets and personal details, picking a licence that was compatible with the libraries I'd used, and a README rewrite. That audit turned up a dozen places where my README no longer matched the code. The docs had drifted while the firmware moved on. AI as a reviewer turned out to be at least as useful as AI as an author.
 
 ## Problem 1: the pack reset every time I fired
 
-The first time everything was wired together, holding the fire button rebooted the pack. Not sometimes. Every time.
+On the second pack, holding the fire button rebooted the whole thing.
 
-A reboot can be a lot of things: a crash, a watchdog, a bad pointer. Guessing would have been slow, so the first step was making the failure say what it was. The ESP32 records why it last restarted, and I surfaced that on the control page. The answer was *brownout*. The chip wasn't crashing. It was losing power.
+<!-- TODO: check this matches what happened. The repo only records brownout resets on the simple pack while firing; add how often and when you first saw it. -->
+
+A reboot can be a lot of things: a crash, a watchdog, a bad pointer. Guessing would have been slow, so the first step was making the failure say what it was. The ESP32 records why it last restarted, and the control page shows it. The answer was *brownout*. The chip wasn't crashing. It was losing power.
 
 That narrowed it right down. The ESP32 was sharing the amplifier's 5V battery feed. Firing is the loudest thing the pack does, and loud audio plus a Wi-Fi transmit burst was enough to drag the supply below what the chip could tolerate.
 
